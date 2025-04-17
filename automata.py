@@ -1,6 +1,13 @@
 from collections import defaultdict
 from enum import Enum
 
+class Error(Enum):
+    INVALID_NUM = "Invalid number"
+    INVALID_INPUT = "Invalid input"
+    UNCLOSED_COMMENT = "Unclosed comment"
+    UNMATCHED_COMMENT = "Unmatched comment"
+
+
 class StateType(Enum):
     DEF = 0
     ACCEPT = 1
@@ -57,16 +64,25 @@ class Alph:
 
 
 class Automata:
-    def __init__(self, startState):
+    def __init__(self, startState, default_panic_alph=Alph()):
         self.startState = startState
-        self.states = [startState]
+        self.default_panic_alph = default_panic_alph # if we are in any state and char is in default_panic_alph, we are transfered to default_panic_state
+        self.default_panic_state = State((StateType.ERROR, Error.INVALID_INPUT), priority=float('-inf'))
         self.transitions = defaultdict(list)
+        self.states = [self.startState, self.default_panic_state]
+        self.add_transition_to_panic(startState)
+        self.add_transition_to_panic(self.default_panic_state) # panic has a default_panic_alph transition to itself since panic mode continues to the first char that can be part of a token
+
+    def add_transition_to_panic (self, from_s):
+        self.transitions[from_s].append((self.default_panic_state, self.default_panic_alph))
 
     def getStartState(self):
         return self.startState
     
-    def addState(self, state):
+    def addState(self, state, add_transition_to_panic = True):
         self.states.append(state)
+        if add_transition_to_panic: # this value is set to false for the state in the middle of a comment
+            self.add_transition_to_panic(state)
         return
 
     def addTransition(self, from_s, to_s, alph):
