@@ -23,5 +23,5 @@ class SymbolTable:
     def format_to_text(self):
         text = ""
         for symbol in self.symbols:
-            text += symbol[0] + ".\t" + symbol[1] + "\n"
+            text += str(symbol[0]) + ".\t" + symbol[1] + "\n"
         return text

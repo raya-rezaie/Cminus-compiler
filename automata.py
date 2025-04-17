@@ -54,7 +54,7 @@ class Alph:
         self.__addToRanges(self.exclude_ranges, range)
         return self
     
-    def includeAllChars(self, range: tuple):
+    def includeAllChars(self):
         self.include((chr(0), chr(127)))
         return self
     
