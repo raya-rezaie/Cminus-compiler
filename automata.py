@@ -8,11 +8,19 @@ class StateType(Enum):
 
 
 class State:
-    def __init__(self, type=(StateType.DEF,)):
+    def __init__(self, type=(StateType.DEF,), priority=0):
         self.type = type
+        self.priority = priority # lower number = higher priority
     
     def is_terminal(self):
-        return type[0] == StateType.ACCEPT or type[0] == StateType.ERROR
+        return self.type[0] == StateType.ACCEPT or self.type[0] == StateType.ERROR
+    
+    def get_highest_priority_final(states):
+        hp_final_state = None
+        for state in states:
+            if state.is_terminal() and (hp_final_state == None or state.priority < hp_final_state.priority):
+                hp_final_state = state
+        return hp_final_state
 
 
 class Alph:
