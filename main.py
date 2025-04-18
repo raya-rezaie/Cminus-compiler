@@ -18,11 +18,11 @@ def buildCMinusAutomata():
     panic_alphabet = Alph().includeAllChars().exclude(('a', 'z')) \
                                                 .exclude(('A', 'Z')) \
                                                 .exclude(('0', '9')) \
-                                                .exclude((':',)).exclude((';',)).exclude(('[',']')).exclude(('(',')')).exclude(('{','}')) \
+                                                .exclude((':',)).exclude((';',)).exclude(('[',']')).exclude(('(',')')).exclude(('{','}')).exclude(',',) \
                                                 .exclude(('+',)).exclude(('-',)).exclude(('*',)).exclude(('/',)).exclude(('=',)).exclude(('<',)) \
                                                 .exclude((' ',)).exclude(('\t',)).exclude(('\n',)).exclude(('\r',)).exclude(('\f',)).exclude(('\v',))
     alph_invalid_num = Alph().includeAllChars().exclude(('0', '9')) \
-                                                .exclude((':',)).exclude((';',)).exclude(('[',']')).exclude(('(',')')).exclude(('{','}')) \
+                                                .exclude((':',)).exclude((';',)).exclude(('[',']')).exclude(('(',')')).exclude(('{','}')).exclude((',',)) \
                                                 .exclude(('+',)).exclude(('-',)).exclude(('*',)).exclude(('/',)).exclude(('=',)).exclude(('<',)) \
                                                 .exclude((' ',)).exclude(('\t',)).exclude(('\n',)).exclude(('\r',)).exclude(('\f',)).exclude(('\v',))
     automata = Automata(start_state, panic_alphabet)
@@ -294,7 +294,6 @@ def get_next_token():
         new_states = cminusautomata.nextStates(states, char)
         if not new_states:
             reader.back()
-            print("no new states", char, "token so far:", token)
             break
         states = new_states
         token += char
@@ -321,14 +320,13 @@ def main():
                 token_info.add_counter()
                 error_info.add_counter()
             if state_type[1] == Token.WHITESPACE or state_type[1] == Token.COMMENT:
-                # print(line_no, state_type[1].value + "|" + str(ord(next_token)) + "|")
                 continue
             if state_type[1] == Token.ID:
                 symbol_table.add_symbol(next_token)
-            token_info.add_info("(" + state_type[1].value + ", " + next_token + ") ")
+            token_info.add_info("(" + state_type[1].value + ", " + next_token + ")")
         elif state_type[0] == StateType.ERROR:
             has_error = True
-            error_info.add_info("(" + str(next_token) + ", " + state_type[1].value + ") ")
+            error_info.add_info("(" + str(next_token) + ", " + state_type[1].value + ")")
 
     error_file = open('lexical_errors.txt', 'w')
     if not has_error:
