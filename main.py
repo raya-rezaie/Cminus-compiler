@@ -69,7 +69,7 @@ def buildCMinusAutomata():
     alph09 = Alph().include(('0', '9'))
     alph_slash = Alph().include(( '/' , '/' ))
     comment_alphabet = Alph().includeAllChars().exclude(('*' , '*'))
-    comment_alphabet2 = Alph().includeAllChars().exclude(('/', '/'))
+    comment_alphabet2 = Alph().includeAllChars().exclude(('/', '/')).exclude(('*' , '*'))
 
     # numbers
     num_state = State((StateType.ACCEPT, Token.NUM))
@@ -276,6 +276,8 @@ def buildCMinusAutomata():
     automata.addTransition(comment0_state , comment0_state , comment_alphabet)
     automata.addTransition(comment1_state , comment0_state , comment_alphabet2)
     automata.addTransition(comment1_state , comment2_state , alph_slash)
+    automata.addTransition(comment1_state , comment1_state , alph_star)
+    
 
     # unmatched
     unmatched_comment_state = State((StateType.ERROR , Error.UNMATCHED_COMMENT))
