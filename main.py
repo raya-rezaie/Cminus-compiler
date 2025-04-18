@@ -152,9 +152,9 @@ def buildCMinusAutomata():
     automata.addState(break3_state)
     automata.addState(break4_state)
     automata.addTransition(start_state , break0_state , alph_b)
-    automata.addTransition(break1_state , break1_state , alph_r)
-    automata.addTransition(break2_state , break2_state , alph_e)
-    automata.addTransition(break3_state , break3_state , alph_a)
+    automata.addTransition(break0_state , break1_state , alph_r)
+    automata.addTransition(break1_state , break2_state , alph_e)
+    automata.addTransition(break2_state , break3_state , alph_a)
     automata.addTransition(break3_state , break4_state ,  alph_k)
 
     #return 
