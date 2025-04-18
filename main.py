@@ -44,7 +44,8 @@ def buildCMinusAutomata():
     alph_a = Alph().include(('a' , 'a'))
     alph_k = Alph().include(('k' , 'k'))
     alph_u = Alph().include(('u' , 'u'))
-    alph_white = Alph().include((' ' , ' ')).include(('\t' , '\n'))
+    alph_white = Alph().include((' ',)).include(('\n',)).include(('\t',)).include(('\r',)).include(('\v',)).include(('\f',))
+    # alph_white = Alph().include((' ' , ' ')).include(('\t' , '\r'))
     alph_semicolon = Alph().include((';' , ';'))
     alph_colon = Alph().include((':' , ':'))
     alph_equal = Alph().include(('=' , '='))
@@ -63,7 +64,7 @@ def buildCMinusAutomata():
     alph09 = Alph().include(('0', '9'))
     alph_slash = Alph().include(( '/' , '/' ))
     comment_alphabet = Alph().includeAllChars().exclude(('*' , '*'))
-    comment_alphabet2 = Alph().includeAllChars().exclude(('\\', '\\'))
+    comment_alphabet2 = Alph().includeAllChars().exclude(('/', '/'))
 
     # numbers
     num_state = State((StateType.ACCEPT, Token.NUM))
@@ -180,7 +181,6 @@ def buildCMinusAutomata():
     whiteSpace0_state = State((StateType.ACCEPT , Token.WHITESPACE))
     automata.addState(whiteSpace0_state, False)
     automata.addTransition(start_state , whiteSpace0_state , alph_white)
-    automata.addTransition(whiteSpace0_state , whiteSpace0_state , alph_white)
 
     #automata.addTransition(whiteSpace0_state , start_state , new_token_alphabet)
     #= & ==
@@ -244,7 +244,7 @@ def buildCMinusAutomata():
     # *
     star_state = State((StateType.ACCEPT , Token.SYMBOL))
     automata.addState(star_state)
-    automata.addTransition(start_state , start_state , alph_star)
+    automata.addTransition(start_state , star_state , alph_star)
 
     # ( 
     paranth_state = State((StateType.ACCEPT , Token.SYMBOL))
@@ -286,7 +286,6 @@ def get_next_token():
     global cminusautomata
     global reader
     states = [cminusautomata.getStartState()]
-    i = 0
     token = ""
     while states:
         char = reader.read()
@@ -295,10 +294,10 @@ def get_next_token():
         new_states = cminusautomata.nextStates(states, char)
         if not new_states:
             reader.back()
+            print("no new states", char, "token so far:", token)
             break
         states = new_states
         token += char
-        i += 1
     final_state = State.get_highest_priority_final(states)
     return final_state.type, token
 
@@ -313,7 +312,7 @@ def main():
     error_info = LineInfo()
     has_error = False
     line_no = 1
-    while reader.read() != '':
+    while reader.read():
         reader.back()
         state_type, next_token = get_next_token()
         if state_type[0] == StateType.ACCEPT:
@@ -322,6 +321,7 @@ def main():
                 token_info.add_counter()
                 error_info.add_counter()
             if state_type[1] == Token.WHITESPACE or state_type[1] == Token.COMMENT:
+                # print(line_no, state_type[1].value + "|" + str(ord(next_token)) + "|")
                 continue
             if state_type[1] == Token.ID:
                 symbol_table.add_symbol(next_token)

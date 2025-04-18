@@ -8,8 +8,8 @@ class LineInfo:
     def add_info(self, info):
         self.infos[self.counter].append(info)
     
-    def add_counter(self, count):
-        self.counter += count
+    def add_counter(self):
+        self.counter += 1
 
     def format_to_text(self):
         text = ""
