@@ -240,8 +240,17 @@ def buildCMinusAutomata():
     star_state = State((StateType.ACCEPT , Token.SYMBOL))
     automata.addState(star_state)
     automata.addTransition(start_state , start_state , alph_star)
-    # /
-    slash_state = State((StateType.ACCEPT , Token.SYMBOL) , 0)
+    # ( 
+    paranth_state = State((StateType.ACCEPT , Token.SYMBOL))
+    automata.addState(paranth_state)
+    automata.addTransition(start_state , paranth_state , alph_paranth1)
+    # )
+    paranth2_state = State((StateType.ACCEPT , Token.SYMBOL))
+    automata.addState(paranth2_state)
+    automata.addTransition(start_state , paranth_state , alph_paranth2)
+    
+    # / and comment
+    slash_state = State((StateType.ACCEPT , Token.SYMBOL))
     automata.addState(slash_state)
     automata.addTransition(start_state , slash_state , alph_slash)
     comment0_state = State((StateType.ERROR , Error.UNCLOSED_COMMENT), -1)
