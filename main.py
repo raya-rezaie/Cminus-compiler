@@ -76,7 +76,7 @@ def buildCMinusAutomata():
     automata.addTransition(num_state, err_invalid_num_state, alph_invalid_num)
 
     #if
-    if0_state = State((StateType.DEF))
+    if0_state = State((StateType.DEF,))
     automata.addState(if0_state)  
     if1_state = State((StateType.ACCEPT , Token.KEYWORD) , -1)
     automata.addState(if1_state)
@@ -85,9 +85,9 @@ def buildCMinusAutomata():
     automata.addTransition(if0_state ,if1_state , alph_f)
 
     #else
-    else0_state = State((StateType.DEF))
-    else1_state = State((StateType.DEF))
-    else2_state = State((StateType.DEF))
+    else0_state = State((StateType.DEF,))
+    else1_state = State((StateType.DEF,))
+    else2_state = State((StateType.DEF,))
     else3_state = State((StateType.ACCEPT , Token.KEYWORD) , -1)
     automata.addState(else0_state)
     automata.addState(else1_state)
@@ -100,8 +100,8 @@ def buildCMinusAutomata():
     automata.addTransition(else2_state , else3_state , alph_e)
 
     #int
-    int0_state = State((StateType.DEF))
-    int1_state = State((StateType.DEF))
+    int0_state = State((StateType.DEF,))
+    int1_state = State((StateType.DEF,))
     int2_state = State((StateType.ACCEPT , Token.KEYWORD) , -1)
 
     automata.addTransition(start_state , int0_state , alph_i)
@@ -109,9 +109,9 @@ def buildCMinusAutomata():
     automata.addTransition(int1_state , int2_state , alph_t)
 
     #void
-    void0_state = State((StateType.DEF))
-    void1_state = State((StateType.DEF))
-    void2_state = State((StateType.DEF))
+    void0_state = State((StateType.DEF,))
+    void1_state = State((StateType.DEF,))
+    void2_state = State((StateType.DEF,))
     void3_state = State((StateType.ACCEPT , Token.KEYWORD) , -1)
     automata.addState(void0_state)
     automata.addState(void1_state)
@@ -123,10 +123,10 @@ def buildCMinusAutomata():
     automata.addTransition(void2_state , void3_state , alph_d)
 
     #while
-    while0_state = State((StateType.DEF))
-    while1_state = State((StateType.DEF))
-    while2_state = State((StateType.DEF))
-    while3_state = State((StateType.DEF))
+    while0_state = State((StateType.DEF,))
+    while1_state = State((StateType.DEF,))
+    while2_state = State((StateType.DEF,))
+    while3_state = State((StateType.DEF,))
     while4_state = State((StateType.ACCEPT , Token.KEYWORD) , -1)
     automata.addState(while0_state)
     automata.addState(while1_state)
@@ -140,10 +140,10 @@ def buildCMinusAutomata():
     automata.addTransition(while3_state , while4_state , alph_e)
 
     #break
-    break0_state = State((StateType.DEF))
-    break1_state = State((StateType.DEF))
-    break2_state = State((StateType.DEF))
-    break3_state = State((StateType.DEF))
+    break0_state = State((StateType.DEF,))
+    break1_state = State((StateType.DEF,))
+    break2_state = State((StateType.DEF,))
+    break3_state = State((StateType.DEF,))
     break4_state = State((StateType.ACCEPT , Token.KEYWORD) , -1)
     automata.addState(break0_state)
     automata.addState(break1_state)
@@ -157,11 +157,11 @@ def buildCMinusAutomata():
     automata.addTransition(break3_state , break4_state ,  alph_k)
 
     #return 
-    return0_state = State((StateType.DEF))
-    return1_state = State((StateType.DEF))
-    return2_state = State((StateType.DEF))
-    return3_state = State((StateType.DEF))
-    return4_state = State((StateType.DEF))
+    return0_state = State((StateType.DEF,))
+    return1_state = State((StateType.DEF,))
+    return2_state = State((StateType.DEF,))
+    return3_state = State((StateType.DEF,))
+    return4_state = State((StateType.DEF,))
     return5_state = State((StateType.ACCEPT , Token.KEYWORD) ,-1)
     automata.addState(return0_state)
     automata.addState(return1_state)
