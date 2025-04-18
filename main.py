@@ -271,6 +271,10 @@ def buildCMinusAutomata():
     automata.addTransition(comment0_state , comment0_state , comment_alphabet)
     automata.addTransition(comment1_state , comment0_state , comment_alphabet2)
     automata.addTransition(comment1_state , comment2_state , alph_slash)
+    # unmatched 
+    unmatched_comment_state = State((StateType.ERROR , Error.UNMATCHED_COMMENT))
+    automata.addState(unmatched_comment_state)
+    automata.addTransition(star_state , unmatched_comment_state , alph_slash)
 
     # ID
     ID_state = State((StateType.ACCEPT , Token.ID))
