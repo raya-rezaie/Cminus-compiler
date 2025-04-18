@@ -1,13 +1,13 @@
 class CharReader:
     def __init__(self, filepath):
-        self.file = open(filepath, 'r')
+        self.file = open(filepath, 'rb')
         self.eof_reached = False
 
     def read(self):
-        if self.eof_reached:
-            return 'EOF'
+        # if self.eof_reached:
+        #     return 'EOF'
 
-        char = self.file.read(1)
+        char = self.file.read(1).decode("utf-8")
         # if char == '':
         #     self.eof_reached = True
         #     self.file.close()
