@@ -6,4 +6,6 @@
 6.	return
 7.	void
 8.	main
-9.	raya2
+9.	f
+10.	a
+11.	b

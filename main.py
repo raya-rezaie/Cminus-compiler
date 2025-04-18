@@ -306,7 +306,7 @@ def main():
     global reader
     cminusautomata = buildCMinusAutomata()
     reader = CharReader('input.txt')
-    symbol_table = SymbolTable(['break', 'else', 'if', 'int', 'while', 'return', 'void', 'main'])
+    symbol_table = SymbolTable(['break', 'else', 'if', 'int', 'while', 'return', 'void'])
     token_info = LineInfo()
     error_info = LineInfo()
     has_error = False
@@ -317,8 +317,8 @@ def main():
         if state_type[0] == StateType.ACCEPT:
             if next_token == '\n':
                 line_no += 1
-                token_info.add_counter()
-                error_info.add_counter()
+                token_info.add_counter(1)
+                error_info.add_counter(1)
             if state_type[1] == Token.WHITESPACE or state_type[1] == Token.COMMENT:
                 continue
             if state_type[1] == Token.ID:
