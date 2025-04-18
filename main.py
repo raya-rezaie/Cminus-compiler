@@ -68,7 +68,7 @@ def buildCMinusAutomata():
 
     # numbers
     num_state = State((StateType.ACCEPT, Token.NUM))
-    automata.addState(num_state)
+    automata.addState(num_state, False)
     err_invalid_num_state = State((StateType.ERROR, Error.INVALID_NUM))
     automata.addState(err_invalid_num_state, False) #TODO: change if 234d! is not (234d, invalid number) (!, invalid input)
 
@@ -271,9 +271,10 @@ def buildCMinusAutomata():
     automata.addTransition(comment0_state , comment0_state , comment_alphabet)
     automata.addTransition(comment1_state , comment0_state , comment_alphabet2)
     automata.addTransition(comment1_state , comment2_state , alph_slash)
-    # unmatched 
+
+    # unmatched
     unmatched_comment_state = State((StateType.ERROR , Error.UNMATCHED_COMMENT))
-    automata.addState(unmatched_comment_state)
+    automata.addState(unmatched_comment_state, False)
     automata.addTransition(star_state , unmatched_comment_state , alph_slash)
 
     # ID
@@ -327,10 +328,12 @@ def main():
                 continue
             if state_type[1] == Token.ID:
                 symbol_table.add_symbol(next_token)
-            token_info.add_info("(" + state_type[1].value + ", " + next_token + ")")
+            token_info.add_info("(" + state_type[1].value + ", " + str(next_token) + ")")
         elif state_type[0] == StateType.ERROR:
             has_error = True
-            error_info.add_info("(" + str(next_token) + ", " + state_type[1].value + ")")
+            if state_type[1] == Error.UNCLOSED_COMMENT:
+                next_token = next_token.split()[0] + " ..." # only print first word of unmatched comment
+            error_info.add_info("(" + next_token + ", " + state_type[1].value + ")")
 
     error_file = open('lexical_errors.txt', 'w')
     if not has_error:
