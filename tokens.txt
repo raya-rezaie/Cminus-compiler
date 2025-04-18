@@ -1,0 +1,1 @@
+1.	(KEYWORD, if)  (NUM, 122)  (SYMBOL, ==)  (SYMBOL, =)  (NUM, 2)  (SYMBOL, {)  (NUM, 2)  (SYMBOL, })  (ID, raya2)  (NUM, 352)  
