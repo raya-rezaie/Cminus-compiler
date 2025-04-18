@@ -1,3 +1,6 @@
+# Raya Rezaie 401170575
+# Yasna Nooshiravani 401106674
+
 from automata import *
 from charreader import *
 from symboltable import *
