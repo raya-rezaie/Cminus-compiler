@@ -34,6 +34,7 @@ class Alph:
     def __init__(self):
         self.include_ranges = []
         self.exclude_ranges = []
+        self.includes_all_chars = False
     
     def __isInRanges(self, ranges, char):
         for range in ranges:
@@ -55,22 +56,22 @@ class Alph:
         return self
     
     def includeAllChars(self):
-        self.include((chr(0), chr(255)))
+        self.includes_all_chars = True
         return self
     
     # char is in alphabet if it is included and not excluded
     def isInAlph(self, char):
-        return self.__isInRanges(self.include_ranges, char) and not self.__isInRanges(self.exclude_ranges, char)
+        return (self.includes_all_chars or self.__isInRanges(self.include_ranges, char)) and (not self.__isInRanges(self.exclude_ranges, char))
 
 
 class Automata:
     def __init__(self, startState, default_panic_alph=Alph()):
         self.startState = startState
         self.default_panic_alph = default_panic_alph # if we are in any state and char is in default_panic_alph, we are transfered to default_panic_state
-        self.default_panic_state = State((StateType.ERROR, Error.INVALID_INPUT), priority=float('-inf'))
+        self.default_panic_state = State((StateType.ERROR, Error.INVALID_INPUT), -10)
         self.transitions = defaultdict(list)
         self.states = [self.startState, self.default_panic_state]
-        self.add_transition_to_panic(startState)
+        self.add_transition_to_panic(self.startState)
         # panic does not have a default_panic_alph transition to itself since invalid input is generated for each char in default_panic_alph
 
     def add_transition_to_panic (self, from_s):

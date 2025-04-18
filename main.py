@@ -18,11 +18,17 @@ def buildCMinusAutomata():
     panic_alphabet = Alph().includeAllChars().exclude(('a', 'z')) \
                                                 .exclude(('A', 'Z')) \
                                                 .exclude(('0', '9')) \
-                                                .exclude((':',)).exclude((';',)).exclude(('[',']')).exclude(('(',')')).exclude(('{','}')).exclude(',',) \
+                                                .exclude((':',)).exclude((';',)).exclude((',',)) \
+                                                .exclude(('[',)).exclude((']',)) \
+                                                .exclude(('(',)).exclude((')',)) \
+                                                .exclude(('{',)).exclude(('}',)) \
                                                 .exclude(('+',)).exclude(('-',)).exclude(('*',)).exclude(('/',)).exclude(('=',)).exclude(('<',)) \
                                                 .exclude((' ',)).exclude(('\t',)).exclude(('\n',)).exclude(('\r',)).exclude(('\f',)).exclude(('\v',))
     alph_invalid_num = Alph().includeAllChars().exclude(('0', '9')) \
-                                                .exclude((':',)).exclude((';',)).exclude(('[',']')).exclude(('(',')')).exclude(('{','}')).exclude((',',)) \
+                                                .exclude((':',)).exclude((';',)).exclude((',',)) \
+                                                .exclude(('[',)).exclude((']',)) \
+                                                .exclude(('(',)).exclude((')',)) \
+                                                .exclude(('{',)).exclude(('}',)) \
                                                 .exclude(('+',)).exclude(('-',)).exclude(('*',)).exclude(('/',)).exclude(('=',)).exclude(('<',)) \
                                                 .exclude((' ',)).exclude(('\t',)).exclude(('\n',)).exclude(('\r',)).exclude(('\f',)).exclude(('\v',))
     automata = Automata(start_state, panic_alphabet)
@@ -45,7 +51,6 @@ def buildCMinusAutomata():
     alph_k = Alph().include(('k' , 'k'))
     alph_u = Alph().include(('u' , 'u'))
     alph_white = Alph().include((' ',)).include(('\n',)).include(('\t',)).include(('\r',)).include(('\v',)).include(('\f',))
-    # alph_white = Alph().include((' ' , ' ')).include(('\t' , '\r'))
     alph_semicolon = Alph().include((';' , ';'))
     alph_colon = Alph().include((':' , ':'))
     alph_equal = Alph().include(('=' , '='))
