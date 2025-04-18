@@ -55,7 +55,7 @@ class Alph:
         return self
     
     def includeAllChars(self):
-        self.include((chr(0), chr(127)))
+        self.include((chr(0), chr(255)))
         return self
     
     # char is in alphabet if it is included and not excluded
@@ -71,7 +71,7 @@ class Automata:
         self.transitions = defaultdict(list)
         self.states = [self.startState, self.default_panic_state]
         self.add_transition_to_panic(startState)
-        self.add_transition_to_panic(self.default_panic_state) # panic has a default_panic_alph transition to itself since panic mode continues to the first char that can be part of a token
+        # panic does not have a default_panic_alph transition to itself since invalid input is generated for each char in default_panic_alph
 
     def add_transition_to_panic (self, from_s):
         self.transitions[from_s].append((self.default_panic_state, self.default_panic_alph))
