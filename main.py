@@ -21,11 +21,7 @@ def buildCMinusAutomata():
                                                     .exclude((':',)).exclude((';',)).exclude(('[',']')).exclude(('(',')')).exclude(('{','}')) \
                                                     .exclude(('+',)).exclude(('-',)).exclude(('*',)).exclude(('/',)).exclude(('=',)).exclude(('<',)) \
                                                     .exclude((' ',)).exclude(('\t',)).exclude(('\n',)).exclude(('\r',)).exclude(('\f',)).exclude(('\v',))
-    new_token_alphabet =  Alph().includeAllChars().exclude(('a', 'z')) \
-                                                    .exclude(('A', 'Z')) \
-                                                    .exclude(('0', '9')) \
-                                                    .exclude((':',)).exclude((';',)).exclude(('[',']')).exclude(('(',')')).exclude(('{','}')) \
-                                                    .exclude(('+',)).exclude(('-',)).exclude(('*',)).exclude(('/',)).exclude(('=',)).exclude(('<',)) \
+
                                                                                                  
     automata = Automata(start_state, panic_alphabet)
     alph_v = Alph().include(('v' , 'v'))
@@ -48,10 +44,6 @@ def buildCMinusAutomata():
     alph_u = Alph().include(('u' , 'u'))
     alph_space = Alph().include((' ' , ' '))
     alph_white = Alph().include(('\t' , '\n'))
-    #white_r = Alph().include(('\r' , '\r'))
-    #white_v = Alph(('\v' , '\v'))
-    #white_f = Alph().include(('\f' , '\f'))
-    #white_n = Alph().include(('\n' , '\n'))
     alph_semicolon = Alph().include((';' , ';'))
     alph_colon = Alph().include((':' , ':'))
     alph_equal = Alph().include(('=' , '='))
@@ -247,7 +239,7 @@ def buildCMinusAutomata():
     # )
     paranth2_state = State((StateType.ACCEPT , Token.SYMBOL))
     automata.addState(paranth2_state)
-    automata.addTransition(start_state , paranth_state , alph_paranth2)
+    automata.addTransition(start_state , paranth2_state , alph_paranth2)
     
     # / and comment
     slash_state = State((StateType.ACCEPT , Token.SYMBOL))
