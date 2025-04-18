@@ -292,6 +292,7 @@ def get_next_token():
     global reader
     states = [cminusautomata.getStartState()]
     token = ""
+    newlines = 0
     while states:
         char = reader.read()
         if not char:
@@ -300,10 +301,12 @@ def get_next_token():
         if not new_states:
             reader.back()
             break
+        if char == '\n':
+            newlines += 1
         states = new_states
         token += char
     final_state = State.get_highest_priority_final(states)
-    return final_state.type, token
+    return final_state.type, token, newlines
 
 
 def main():
@@ -318,22 +321,20 @@ def main():
     line_no = 1
     while reader.read():
         reader.back()
-        state_type, next_token = get_next_token()
+        state_type, next_token, newlines = get_next_token()
         if state_type[0] == StateType.ACCEPT:
-            if next_token == '\n':
-                line_no += 1
-                token_info.add_counter(1)
-                error_info.add_counter(1)
-            if state_type[1] == Token.WHITESPACE or state_type[1] == Token.COMMENT:
-                continue
             if state_type[1] == Token.ID:
                 symbol_table.add_symbol(next_token)
-            token_info.add_info("(" + state_type[1].value + ", " + str(next_token) + ")")
+            if not (state_type[1] == Token.WHITESPACE or state_type[1] == Token.COMMENT):
+                token_info.add_info("(" + state_type[1].value + ", " + str(next_token) + ")")
         elif state_type[0] == StateType.ERROR:
             has_error = True
             if state_type[1] == Error.UNCLOSED_COMMENT:
-                next_token = next_token.split()[0] + " ..." # only print first word of unmatched comment
+                next_token = next_token[:7] + "..." # only print first seven characters of unclosed comment
             error_info.add_info("(" + next_token + ", " + state_type[1].value + ")")
+        line_no += newlines
+        token_info.add_counter(newlines)
+        error_info.add_counter(newlines)
 
     error_file = open('lexical_errors.txt', 'w' ,  encoding='utf-8')
     if not has_error:
