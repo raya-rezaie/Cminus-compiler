@@ -335,18 +335,18 @@ def main():
                 next_token = next_token.split()[0] + " ..." # only print first word of unmatched comment
             error_info.add_info("(" + next_token + ", " + state_type[1].value + ")")
 
-    error_file = open('lexical_errors.txt', 'w')
+    error_file = open('lexical_errors.txt', 'w' ,  encoding='utf-8')
     if not has_error:
         error_file.write('There is no lexical error.')
     else:
         error_file.write(error_info.format_to_text())
     error_file.close()
 
-    symbol_file = open('symbol_table.txt', 'w')
+    symbol_file = open('symbol_table.txt', 'w' ,  encoding='utf-8')
     symbol_file.write(symbol_table.format_to_text())
     symbol_file.close()
 
-    token_file = open('tokens.txt', 'w')
+    token_file = open('tokens.txt', 'w' ,  encoding='utf-8')
     token_file.write(token_info.format_to_text())
     token_file.close()
 
