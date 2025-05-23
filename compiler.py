@@ -58,9 +58,21 @@ def get_next_token():
     else:
         return (Token.EOF, "$")
 
-def parser(startNT):
+def parser():
+    startNT = cminusParseFA(apply_fa)
     next_token = get_next_token()
     tree = startNT.call(next_token)
+    return tree
+
+def apply_fa(fa, token):
+    current_state = fa.getStartState()
+    subtrees = []
+    while not current_state.is_terminal():
+        current_state, tree = fa.nextState(current_state, token)
+        subtrees.append(tree)
+        token = get_next_token()
+    return subtrees
+        
 
 def main():
     # SCANNER INITIALIZATION
@@ -79,8 +91,8 @@ def main():
     has_error = False
     line_no = 1
 
-    startNT = cminusParseFA()
-    parser(startNT)
+    tree = parser()
+    print(tree)
 
     # SCANNER FILES
     error_file = open('lexical_errors.txt', 'w' ,  encoding='utf-8')
