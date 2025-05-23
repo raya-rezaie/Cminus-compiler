@@ -2,7 +2,7 @@ from collections import defaultdict
 from automata import *
 
 class Terminal:
-    def __init__(self, type, verbatim=False):
+    def __init__(self, type, verbatim=True):
         self.type = type # of type "Token" if verbatim=false, otherwise string
         self.verbatim = verbatim # symbol and keyword tokens need to be matched verbatim, others just need to match token type
     
@@ -24,7 +24,7 @@ class NonTerminal:
     def set_fa (self, fa):
         self.fa = fa
     
-    def call(self, token): # only call after matches(token) is True
+    def call(self, token): #TODO: add matches check here?
         self.func(self.fa, token)
     
     def matches(self, token):
@@ -47,13 +47,16 @@ class ParserFA:
         self.states.append(state)
 
     def addTransition(self, from_s, to_s, tnt):
-        self.transitions[from_s].append((to_s, tnt))
+        self.transitions[from_s].append((to_s, tnt)) # tnt == None represents epsilon
 
     def nextState(self, from_state, token):
+        ep_next_state = None
         for transition in self.transitions[from_state]:
             to_s, tnt = transition
-            if tnt.matches(token):
+            if not tnt: # epsilon transition, last priority 
+                ep_next_state = to_s
+            elif tnt.matches(token):
                 if tnt is NonTerminal:
                     tnt.call(token)
                 return to_s
-        return None
+        return ep_next_state

@@ -1,5 +1,129 @@
 from parserfa import *
 
-def cminusParseFA():
-    #TODO: build fa based on rules, firsts, and follows, return parserfa of nonterminal "Program"
+def apply_fa(fa):
     pass
+
+def cminusParseFA():
+    #TODO: build fa based on rules, firsts, and follows, return nonterminal "Program"
+    # TERMINALS
+    ID = Terminal(Token.ID, False)
+    NUM = Terminal(Token.NUM, False)
+    EOF = Terminal(Token.EOF, False)
+
+    SEMICOLON = Terminal(";")
+    COLON = Terminal(":")
+    COMMA = Terminal(",")
+    OPENBRACKET = Terminal("[")
+    CLOSEBRACKET = Terminal("]")
+    OPENPAR = Terminal("(")
+    CLOSEPAR = Terminal(")")
+    OPENCURLY = Terminal("{")
+    CLOSECURLY = Terminal("}")
+    LESS = Terminal("<")
+    DOUBLEEQUAL = Terminal("==")
+    PLUS = Terminal("+")
+    MINUS = Terminal("-")
+    MULT = Terminal("*")
+    EQUAL = Terminal("=")
+    IF = Terminal("if")
+    ELSE = Terminal("else")
+    VOID = Terminal("void")
+    INT = Terminal("int")
+    WHILE = Terminal("while")
+    BREAK = Terminal("break")
+    RETURN = Terminal("return")
+
+    # NONTERMINALS
+    program = NonTerminal([INT, VOID, EOF], apply_fa)
+    declaration_list = NonTerminal([INT, VOID, ID, SEMICOLON, NUM, OPENPAR, OPENCURLY, CLOSECURLY, BREAK, IF, WHILE, RETURN, PLUS, MINUS, EOF], apply_fa)
+    declaration = NonTerminal([INT, VOID], apply_fa)
+    declaration_initial = NonTerminal([INT, VOID], apply_fa)
+    declaration_prime = NonTerminal([SEMICOLON, OPENBRACKET, OPENPAR, ])
+    var_declaration_prime = NonTerminal([SEMICOLON, OPENBRACKET])
+    fun_declaration_prime = NonTerminal([OPENPAR])
+    type_specifier = NonTerminal([INT, VOID])
+    params = NonTerminal([INT, VOID])
+    param_list = NonTerminal([COMMA, CLOSEPAR])
+    param = NonTerminal([INT, VOID])
+    param_prime = NonTerminal([OPENBRACKET, CLOSEPAR, COMMA])
+    compound_stmt = NonTerminal([OPENCURLY])
+    statement_list = NonTerminal([ID, SEMICOLON, NUM, OPENPAR, OPENCURLY, BREAK, IF, WHILE, RETURN, PLUS, MINUS, CLOSECURLY])
+    statement = NonTerminal([ID, SEMICOLON, NUM, OPENPAR, OPENCURLY, BREAK, IF, WHILE, RETURN, PLUS, MINUS])
+    expression_stmt = NonTerminal([ID, SEMICOLON, NUM, OPENPAR, BREAK, PLUS, MINUS])
+    selection_stmt = NonTerminal([IF])
+    iteration_stmt = NonTerminal([WHILE])
+    return_stmt = NonTerminal([RETURN])
+    return_stmt_prime = NonTerminal([ID, SEMICOLON, NUM, OPENPAR, PLUS, MINUS])
+    expression = NonTerminal([ID, NUM, OPENPAR, PLUS, MINUS])
+    b = NonTerminal([OPENBRACKET, OPENPAR, EQUAL, LESS, DOUBLEEQUAL, PLUS, MINUS, MULT, SEMICOLON, CLOSEBRACKET, CLOSEPAR, COMMA])
+    h = NonTerminal([EQUAL, LESS, DOUBLEEQUAL, PLUS, MINUS, MULT, SEMICOLON, CLOSEBRACKET, CLOSEPAR, COMMA])
+    simple_expression_zegond = NonTerminal([NUM, OPENPAR, PLUS, MINUS])
+    simple_expression_prime = NonTerminal([OPENPAR, LESS, DOUBLEEQUAL, PLUS, MINUS, MULT, SEMICOLON, CLOSEBRACKET, CLOSEPAR, COMMA])
+    c = NonTerminal([LESS, DOUBLEEQUAL, SEMICOLON, CLOSEBRACKET, CLOSEPAR, COMMA])
+    relop = NonTerminal([LESS, DOUBLEEQUAL])
+    additive_expression = NonTerminal([ID, NUM, OPENPAR, PLUS, MINUS])
+    additive_expression_prime = NonTerminal([OPENPAR, PLUS, MINUS, MULT, SEMICOLON, CLOSEBRACKET, CLOSEPAR, COMMA, LESS, DOUBLEEQUAL])
+    additive_expression_zegond = NonTerminal([NUM, OPENPAR, PLUS, MINUS])
+    d = NonTerminal([PLUS, MINUS, SEMICOLON, CLOSEBRACKET, CLOSEPAR, COMMA, LESS, DOUBLEEQUAL])
+    addop = NonTerminal([])
+    term = NonTerminal([])
+    term_prime = NonTerminal([])
+    term_zegond = NonTerminal([])
+    g = NonTerminal([])
+    signed_factor = NonTerminal([])
+    signed_factor_prime = NonTerminal([])
+    signed_factor_zegond = NonTerminal([])
+    factor = NonTerminal([])
+    var_call_prime = NonTerminal([])
+    var_prime = NonTerminal([])
+    factor_prime = NonTerminal([])
+    factor_zegond = NonTerminal([])
+    args = NonTerminal([])
+    arg_list = NonTerminal([])
+    arg_list_prime = NonTerminal([])
+
+    # 1. PROGRAM
+    program_s0 = State()
+    programfa = ParserFA(program_s0)
+    program_s1 = State((StateType.ACCEPT,))
+    programfa.addState(program_s1)
+    programfa.addTransition(program_s0, program_s1, declaration_list)
+    program.set_fa(programfa)
+
+    # 2. DECLARATION LIST
+    declaration_list_s0 = State()
+    declaration_list_fa = ParserFA(declaration_list_s0)
+    declaration_list_s1 = State()
+    declaration_list_s2 = State((StateType.ACCEPT,))
+    declaration_list_fa.addState(declaration_list_s1)
+    declaration_list_fa.addState(declaration_list_s2)
+    declaration_list_fa.addTransition(declaration_list_s0, declaration_list_s1, declaration)
+    declaration_list_fa.addTransition(declaration_list_s1, declaration_list_s2, declaration_list)
+    declaration_list_fa.addTransition(declaration_list_s0, declaration_list_s2, None)
+    declaration_list.set_fa(declaration_list_fa)
+
+    # 3. DECLARATION
+    declaration_s0 = State()
+    declaration_fa = ParserFA(declaration_s0)
+    declaration_s1 = State()
+    declaration_s2 = State((StateType.ACCEPT, ))
+    declaration_fa.addState(declaration_s1)
+    declaration_fa.addState(declaration_s2)
+    declaration_fa.addTransition(declaration_s0, declaration_s1, declaration_initial)
+    declaration_fa.addTransition(declaration_s1, declaration_s2, declaration_prime)
+    declaration.set_fa(declaration_fa)
+
+    # 4. DECLARATION INITIAL
+    declaration_initial_s0 = State()
+    declaration_initial_fa = ParserFA(declaration_initial_s0)
+    declaration_initial_s1 = State()
+    declaration_initial_s2 = State((StateType.ACCEPT, ))
+    declaration_initial_fa.addState(declaration_initial_s1)
+    declaration_initial_fa.addState(declaration_initial_s2)
+    declaration_initial_fa.addTransition(declaration_initial_s0, declaration_initial_s1, type_specifier)
+    declaration_initial_fa.addTransition(declaration_initial_s1, declaration_initial_s2, ID)
+    declaration_initial.set_fa(declaration_initial_fa)
+
+    # 5. DECLARATION PRIME
+
+    return program
