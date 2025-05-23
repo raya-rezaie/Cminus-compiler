@@ -58,14 +58,9 @@ def get_next_token():
     else:
         return (Token.EOF, "$")
 
-def parser(parseFA):
-    while True:
-        next_token = get_next_token()
-        print(next_token)
-        #TODO: add function call, remove while true
-        if next_token[0] == Token.EOF:
-            break
-
+def parser(startNT):
+    next_token = get_next_token()
+    tree = startNT.call(next_token)
 
 def main():
     # SCANNER INITIALIZATION
@@ -84,8 +79,8 @@ def main():
     has_error = False
     line_no = 1
 
-    parseFA = cminusParseFA()
-    parser(parseFA)
+    startNT = cminusParseFA()
+    parser(startNT)
 
     # SCANNER FILES
     error_file = open('lexical_errors.txt', 'w' ,  encoding='utf-8')

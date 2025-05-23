@@ -8,6 +8,16 @@ class Error(Enum):
     UNMATCHED_COMMENT = "Unmatched comment"
 
 
+class Token(Enum):
+    NUM = "NUM"
+    ID = "ID"
+    KEYWORD = "KEYWORD"
+    SYMBOL = "SYMBOL"
+    WHITESPACE = "WHITESPACE"
+    COMMENT = "COMMENT"
+    EOF = "EOF"
+
+
 class StateType(Enum):
     DEF = 0
     ACCEPT = 1

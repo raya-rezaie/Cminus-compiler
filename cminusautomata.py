@@ -1,15 +1,5 @@
 from automata import *
 
-class Token(Enum):
-    NUM = "NUM"
-    ID = "ID"
-    KEYWORD = "KEYWORD"
-    SYMBOL = "SYMBOL"
-    WHITESPACE = "WHITESPACE"
-    COMMENT = "COMMENT"
-    EOF = "EOF"
-
-
 def buildCMinusAutomata():
     # initialization and start state
     start_state = State()
