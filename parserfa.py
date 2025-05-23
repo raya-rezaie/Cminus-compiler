@@ -7,7 +7,7 @@ class Terminal:
         self.verbatim = verbatim # symbol and keyword tokens need to be matched verbatim, others just need to match token type
     
     def matches(self, token):
-        if self.verbatim:
+        if not self.verbatim:
             return token[0] == self.type
         return token[1] == self.type
 
@@ -29,7 +29,9 @@ class NonTerminal:
         self.fa = fa
     
     def call(self, token): #TODO: add matches check here?, returns a tree with root=nonterminal
-        return Tree(str(self), self.func(self.fa, token))
+        if self.matches(token):
+            return Tree(str(self), self.func(self.fa, token))
+        return None
     
     def matches(self, token):
         for p in self.predict:
@@ -72,5 +74,10 @@ class Tree:
         self.children = children # each child is a tree itself
 
     def __str__(self):
-        #TODO: add formating to text
-        pass
+        return self.str_aux("")
+        
+    def str_aux(self, tab):
+        res = tab + self.value + "\n"
+        for child in self.children:
+            res += child.str_aux(tab + "\t")
+        return res

@@ -61,6 +61,7 @@ def get_next_token():
 def parser():
     startNT = cminusParseFA(apply_fa)
     next_token = get_next_token()
+    print("next token: ", next_token)
     tree = startNT.call(next_token)
     return tree
 

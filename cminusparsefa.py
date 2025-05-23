@@ -79,48 +79,165 @@ def cminusParseFA(apply_fa):
     arg_list = NonTerminal([ID, NUM,OPENPAR, PLUS, MINUS], apply_fa, "ArgList")
     arg_list_prime = NonTerminal([COMMA, CLOSEPAR], apply_fa, "ArgListPrime")
 
+
+    b.set_fa(create_fa([[expression], [OPENBRACKET, expression, CLOSEBRACKET, h], [simple_expression_prime]]))
+
     # 1. PROGRAM
-    program_s0 = State()
-    programfa = ParserFA(program_s0)
-    program_s1 = State((StateType.ACCEPT,))
-    programfa.addState(program_s1)
-    programfa.addTransition(program_s0, program_s1, declaration_list)
-    program.set_fa(programfa)
+    program.set_fa(create_fa([[declaration_list]]))
 
     # 2. DECLARATION LIST
-    declaration_list_s0 = State()
-    declaration_list_fa = ParserFA(declaration_list_s0)
-    declaration_list_s1 = State()
-    declaration_list_s2 = State((StateType.ACCEPT,))
-    declaration_list_fa.addState(declaration_list_s1)
-    declaration_list_fa.addState(declaration_list_s2)
-    declaration_list_fa.addTransition(declaration_list_s0, declaration_list_s1, declaration)
-    declaration_list_fa.addTransition(declaration_list_s1, declaration_list_s2, declaration_list)
-    declaration_list_fa.addTransition(declaration_list_s0, declaration_list_s2, None)
-    declaration_list.set_fa(declaration_list_fa)
+    declaration_list.set_fa(create_fa([[declaration, declaration_list], [None]]))
 
     # 3. DECLARATION
-    declaration_s0 = State()
-    declaration_fa = ParserFA(declaration_s0)
-    declaration_s1 = State()
-    declaration_s2 = State((StateType.ACCEPT, ))
-    declaration_fa.addState(declaration_s1)
-    declaration_fa.addState(declaration_s2)
-    declaration_fa.addTransition(declaration_s0, declaration_s1, declaration_initial)
-    declaration_fa.addTransition(declaration_s1, declaration_s2, declaration_prime)
-    declaration.set_fa(declaration_fa)
+    declaration.set_fa(create_fa([[declaration_initial, declaration_prime]]))
 
     # 4. DECLARATION INITIAL
-    declaration_initial_s0 = State()
-    declaration_initial_fa = ParserFA(declaration_initial_s0)
-    declaration_initial_s1 = State()
-    declaration_initial_s2 = State((StateType.ACCEPT, ))
-    declaration_initial_fa.addState(declaration_initial_s1)
-    declaration_initial_fa.addState(declaration_initial_s2)
-    declaration_initial_fa.addTransition(declaration_initial_s0, declaration_initial_s1, type_specifier)
-    declaration_initial_fa.addTransition(declaration_initial_s1, declaration_initial_s2, ID)
-    declaration_initial.set_fa(declaration_initial_fa)
+    declaration_initial.set_fa(create_fa([[type_specifier, ID]]))
 
     # 5. DECLARATION PRIME
+    declaration_prime.set_fa(create_fa([[fun_declaration_prime], [var_declaration_prime]]))
+
+    # 6. VAR DECLARATION PRIME
+    var_declaration_prime.set_fa(create_fa([[SEMICOLON], [OPENBRACKET, NUM, CLOSEBRACKET, SEMICOLON]]))
+
+    # 7. FUN DECLARATION PRIME
+    fun_declaration_prime.set_fa(create_fa([[OPENPAR, params, CLOSEPAR, compound_stmt]]))
+
+    # 8. TYPE SPECIFIER
+    type_specifier.set_fa(create_fa([[INT], [VOID]]))
+
+    # 9. PARAMS
+    params.set_fa(create_fa([[INT, ID, param_prime, param_list], [VOID]]))
+
+    # 10. PARAM LIST
+    param_list.set_fa(create_fa([[COMMA, param, param_list], [None]]))
+
+    # 11. PARAM
+    param.set_fa(create_fa([[declaration_initial, param_prime]]))
+
+    # 12. PARAM PRIME
+    param_prime.set_fa(create_fa([[OPENBRACKET, CLOSEBRACKET], [None]]))
+
+    # 13. COMPOUND STMT
+    compound_stmt.set_fa(create_fa([[OPENCURLY, declaration_list, statement_list, CLOSECURLY]]))
+
+    # 14. STATEMENT LIST
+    statement_list.set_fa(create_fa([[statement, statement_list], [None]]))
+
+    # 15. STATEMENT
+    statement.set_fa(create_fa([[expression_stmt], [compound_stmt], [selection_stmt], [iteration_stmt], [return_stmt]]))
+
+    # 16. EXPRESSION STMT
+    expression_stmt.set_fa(create_fa([[expression, SEMICOLON], [BREAK, SEMICOLON], [SEMICOLON]]))
+
+    # 17. SELECTION STMT
+    selection_stmt.set_fa(create_fa([[IF, OPENPAR, expression, CLOSEPAR, statement, ELSE, statement]]))
+
+    # 18. ITERATION STMT
+    iteration_stmt.set_fa(create_fa([[WHILE, OPENPAR, expression, CLOSEPAR, statement]]))
+
+    # 19. RETURN STMT
+    return_stmt.set_fa(create_fa([[RETURN, return_stmt_prime]]))
+
+    # 20. RETURN STMT PRIME
+    return_stmt_prime.set_fa(create_fa([[SEMICOLON], [expression, SEMICOLON]]))
+
+    # 21. EXPRESSION
+    expression.set_fa(create_fa([[simple_expression_zegond], [ID, b]]))
+
+    # 22. B
+    b.set_fa(create_fa([[EQUAL, expression], [OPENBRACKET, expression, CLOSEBRACKET, h], [simple_expression_prime]]))
+
+    # 23. H
+    h.set_fa(create_fa([[EQUAL, expression], [g, d, c]]))
+
+    # 24. SIMPLE EXPRESSION ZEGOND
+    simple_expression_zegond.set_fa(create_fa([[additive_expression_zegond, c]]))
+
+    # 25. SIMPLE EXPRESSION PRIME
+    simple_expression_prime.set_fa(create_fa([[additive_expression_prime, c]]))
+
+    # 26. C
+    c.set_fa(create_fa([[relop, additive_expression], [None]]))
+
+    # 27. RELOP
+    relop.set_fa(create_fa([[LESS], [DOUBLEEQUAL]]))
+
+    # 28. ADDITIVE EXPRESSION
+    additive_expression.set_fa(create_fa([[term, d]]))
+
+    # 29. ADDITIVE EXPRESSION PRIME
+    additive_expression_prime.set_fa(create_fa([[term_prime, d]]))
+
+    # 30. ADDITIVE EXPRESSION ZEGOND
+    additive_expression_zegond.set_fa(create_fa([[term_zegond, d]]))
+
+    # 31. D
+    d.set_fa(create_fa([[addop, term, d], [None]]))
+
+    # 32. ADDOP
+    addop.set_fa(create_fa([[PLUS], [MINUS]]))
+
+    # 33. TERM
+    term.set_fa(create_fa([[signed_factor, g]]))
+
+    # 34. TERM PRIME
+    term_prime.set_fa(create_fa([[signed_factor_prime, g]]))
+
+    # 35. TERM ZEGOND
+    term_zegond.set_fa(create_fa([[signed_factor_zegond, g]]))
+
+    # 36. G
+    g.set_fa(create_fa([[MULT, signed_factor, g], [None]]))
+
+    # 37. SIGNED FACTOR
+    signed_factor.set_fa(create_fa([[PLUS, factor], [MINUS, factor], [factor]]))
+
+    # 38. SIGNED FACTOR PRIME
+    signed_factor_prime.set_fa(create_fa([[factor_prime]]))
+
+    # 39. SIGNED FACTOR ZEGOND
+    signed_factor_zegond.set_fa(create_fa([[PLUS, factor], [MINUS, factor], [factor_zegond]]))
+
+    # 40. FACTOR
+    factor.set_fa(create_fa([[OPENPAR, expression, CLOSEPAR], [ID, var_call_prime], [NUM]]))
+
+    # 41. VAR CALL PRIME
+    var_call_prime.set_fa(create_fa([[OPENPAR, args, CLOSEPAR], [var_prime]]))
+
+    # 42. VAR PRIME
+    var_prime.set_fa(create_fa([[OPENBRACKET, expression, CLOSEBRACKET], [None]]))
+
+    # 43. FACTOR PRIME
+    factor_prime.set_fa(create_fa([[OPENPAR, args, CLOSEPAR], [None]]))
+
+    # 44. FACTOR ZEGOND
+    factor_zegond.set_fa(create_fa([[OPENPAR, expression, CLOSEPAR], [NUM]]))
+
+    # 45. ARGS
+    args.set_fa(create_fa([[arg_list], [None]]))
+
+    # 46. ARG LIST
+    arg_list.set_fa(create_fa([[expression, arg_list_prime]]))
+
+    # 47. ARG LIST PRIME
+    arg_list_prime.set_fa(create_fa([[COMMA, expression, arg_list_prime], [None]]))
 
     return program
+
+def create_fa(rules):
+    init_state = State()
+    final_state = State((StateType.ACCEPT,))
+    fa = ParserFA(init_state)
+    fa.addState(final_state)
+    for rule in rules:
+        i = 0
+        curstate = init_state
+        while i < len(rule) - 1:
+            newState = State()
+            fa.addState(newState)
+            fa.addTransition(curstate, newState, rule[i])
+            curstate = newState
+            i+=1 
+        fa.addTransition(curstate, final_state, rule[-1])
+    return fa
