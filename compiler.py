@@ -89,12 +89,12 @@ def apply_fa(fa, token):
             EOF = False
         next_state, tree = fa.nextState(current_state, token)
         if isinstance(next_state, SyntaxError): # error handling
-            parser_has_error = True
             if next_state == SyntaxError.MISSINGT or next_state == SyntaxError.MISSINGNT:
                 if str(tree[1]) == "EOF":
                     EOF = False
                     subtrees.append(Tree("$"))
                 else:
+                    parser_has_error = True
                     parser_error_info.add_info('missing ' + str(tree[1]))
                 keep_token(token)
                 current_state = tree[0]
