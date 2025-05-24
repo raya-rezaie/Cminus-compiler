@@ -40,9 +40,7 @@ class NonTerminal:
         self.fa = fa
     
     def call(self, token): # returns a tree with root=nonterminal
-        if self.matches(token):
-            return Tree(str(self), self.func(self.fa, token))
-        return None
+        return Tree(str(self), self.func(self.fa, token))
     
     def matches(self, token):
         for p in self.predict:
