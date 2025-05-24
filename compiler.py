@@ -84,24 +84,25 @@ def apply_fa(fa, token):
     current_state = fa.getStartState()
     subtrees = []
     EOF = True
-    while EOF:
+    while global_EOF:
         if (token[0] == Token.EOF):
             EOF = False
         next_state, tree = fa.nextState(current_state, token)
         if isinstance(next_state, SyntaxError): # error handling
             parser_has_error = True
             if next_state == SyntaxError.MISSINGT or next_state == SyntaxError.MISSINGNT:
-                if global_EOF and str(tree[1]) != "EOF":
+                if str(tree[1]) == "EOF":
+                    EOF = False
+                    subtrees.append(Tree("$"))
+                else:
                     parser_error_info.add_info('missing ' + str(tree[1]))
                 keep_token(token)
                 current_state = tree[0]
             elif next_state == SyntaxError.ILLEGAL:
                 if token[0] == Token.EOF:
-                    if global_EOF:
-                        parser_error_info.add_info('Unexpected ' + token_type(token))
+                    parser_error_info.add_info('Unexpected ' + token_type(token))
                 else:
-                    if global_EOF:
-                        parser_error_info.add_info('illegal ' + token_type(token))
+                    parser_error_info.add_info('illegal ' + token_type(token))
         else:
             if tree:
                 subtrees.append(tree)
