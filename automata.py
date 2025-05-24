@@ -108,6 +108,11 @@ class Automata:
                         to_states.append(transition[0])
         return to_states
 
+def token_type (token):
+    if token[0] == Token.ID or token[0] == Token.NUM or token[0] == Token.EOF:
+        return token[0].value
+    return token[1]
+
 def format_token(token):
     if token[0] == Token.EOF:
         return "$"

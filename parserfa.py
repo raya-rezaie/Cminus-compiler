@@ -1,10 +1,20 @@
 from collections import defaultdict
 from automata import *
 
+class SyntaxError(Enum):
+    ILLEGAL = 0
+    MISSINGNT = 1
+    MISSINGT = 2
+
 class Terminal:
     def __init__(self, type, verbatim=True):
         self.type = type # of type "Token" if verbatim=false, otherwise string
         self.verbatim = verbatim # symbol and keyword tokens need to be matched verbatim, others just need to match token type
+
+    def __str__(self):
+        if self.verbatim:
+            return self.type
+        return self.type.value
     
     def matches(self, token):
         if not self.verbatim:
@@ -13,8 +23,9 @@ class Terminal:
 
 
 class NonTerminal:
-    def __init__(self, predict = [], func = None, name = "", fa = None): #TODO: probably func something general (apply fa) since fa is passed as well
+    def __init__(self, predict = [], follow = [], func = None, name = "", fa = None): #TODO: probably func something general (apply fa) since fa is passed as well
         self.predict = predict # a list of type "Terminal" (first of nonterminal + follow of nonterminal if epsilon in first)
+        self.follow = follow
         self.func = func
         self.name = name
         self.fa = fa
@@ -28,7 +39,7 @@ class NonTerminal:
     def set_fa (self, fa):
         self.fa = fa
     
-    def call(self, token): #TODO: add matches check here?, returns a tree with root=nonterminal
+    def call(self, token): # returns a tree with root=nonterminal
         if self.matches(token):
             return Tree(str(self), self.func(self.fa, token))
         return None
@@ -41,10 +52,12 @@ class NonTerminal:
 
 
 class ParserFA:
-    def __init__(self, startState):
+    def __init__(self, startState, nt):
         self.startState = startState
         self.transitions = defaultdict(list)
         self.states = [self.startState]
+        self.nt = nt
+        nt.set_fa(self)
     
     def getStartState(self):
         return self.startState
@@ -65,8 +78,19 @@ class ParserFA:
                 if isinstance(tnt, NonTerminal):
                     return (to_s, tnt.call(token))
                 return (to_s, Tree(format_token(token)))
-        return (ep_next_state, None)
-    
+        if ep_next_state:
+            return (ep_next_state, None)
+        
+        # syntax error if reached here
+        
+        link = self.transitions[from_state][0]
+        if isinstance(link[1], Terminal):
+            return (SyntaxError.MISSINGT, link)
+        for f in link[1].follow:
+            if f.matches(token):
+                return (SyntaxError.MISSINGNT, link) # token in follow (self.nt)
+        return (SyntaxError.ILLEGAL, link) # token not in follow (self.nt)
+
 
 class Tree:
     def __init__(self, value, children=[]):

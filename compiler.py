@@ -9,6 +9,7 @@ from cminusautomata import *
 from cminusparsefa import *
 
 kept_token = None
+global_EOF = True
 
 def get_next_token_aux():
     global cminusautomata
@@ -35,8 +36,9 @@ def get_next_token():
     global reader
     global symbol_table
     global token_info
-    global error_info
-    global has_error
+    global scanner_error_info
+    global parser_error_info
+    global scanner_has_error
     global line_no
     global kept_token
     if kept_token:
@@ -52,13 +54,14 @@ def get_next_token():
             if not (state_type[1] == Token.WHITESPACE or state_type[1] == Token.COMMENT):
                 token_info.add_info("(" + state_type[1].value + ", " + str(next_token) + ")")
         elif state_type[0] == StateType.ERROR:
-            has_error = True
+            scanner_has_error = True
             if state_type[1] == Error.UNCLOSED_COMMENT:
                 next_token = next_token[:7] + "..." # only print first seven characters of unclosed comment
-            error_info.add_info("(" + next_token + ", " + state_type[1].value + ")")
+            scanner_error_info.add_info("(" + next_token + ", " + state_type[1].value + ")")
         line_no += newlines
         token_info.add_counter(newlines)
-        error_info.add_counter(newlines)
+        scanner_error_info.add_counter(newlines)
+        parser_error_info.add_counter(newlines)
         if state_type[0] == StateType.ERROR or state_type[1] == Token.COMMENT or state_type[1] == Token.WHITESPACE:
             return get_next_token()
         return (state_type[1], next_token)
@@ -76,19 +79,41 @@ def keep_token(token):
     kept_token = token
 
 def apply_fa(fa, token):
+    global parser_has_error
+    global global_EOF
     current_state = fa.getStartState()
     subtrees = []
-    while True:
-        current_state, tree = fa.nextState(current_state, token)
-        if tree:
-            subtrees.append(tree)
+    EOF = True
+    while EOF:
+        if (token[0] == Token.EOF):
+            EOF = False
+        next_state, tree = fa.nextState(current_state, token)
+        if isinstance(next_state, SyntaxError): # error handling
+            parser_has_error = True
+            if next_state == SyntaxError.MISSINGT or next_state == SyntaxError.MISSINGNT:
+                if global_EOF and str(tree[1]) != "EOF":
+                    parser_error_info.add_info('missing ' + str(tree[1]))
+                keep_token(token)
+                current_state = tree[0]
+            elif next_state == SyntaxError.ILLEGAL:
+                if token[0] == Token.EOF:
+                    if global_EOF:
+                        parser_error_info.add_info('Unexpected ' + token_type(token))
+                else:
+                    if global_EOF:
+                        parser_error_info.add_info('illegal ' + token_type(token))
         else:
-            subtrees.append(Tree("epsilon"))
-        if not tree:
-            keep_token(token)
+            if tree:
+                subtrees.append(tree)
+            else:
+                subtrees.append(Tree("epsilon"))
+            if not tree:
+                keep_token(token)
+            current_state = next_state
         if current_state.is_terminal():
             break
         token = get_next_token()
+        global_EOF = global_EOF and EOF
     return subtrees
         
 
@@ -98,26 +123,30 @@ def main():
     global reader
     global symbol_table
     global token_info
-    global error_info
-    global has_error
+    global scanner_error_info
+    global parser_error_info
+    global scanner_has_error
+    global parser_has_error
     global line_no
     cminusautomata = buildCMinusAutomata()
     reader = CharReader('input.txt')
     symbol_table = SymbolTable(['break', 'else', 'if', 'int', 'while', 'return', 'void'])
     token_info = LineInfo()
-    error_info = LineInfo()
-    has_error = False
+    scanner_error_info = LineInfo()
+    scanner_has_error = False
+    parser_error_info = LineInfo()
+    parser_has_error = False
     line_no = 1
 
     tree = parser()
 
     # SCANNER FILES
-    error_file = open('lexical_errors.txt', 'w',  encoding='utf-8')
-    if not has_error:
-        error_file.write('There is no lexical error.')
+    scanner_error_file = open('lexical_errors.txt', 'w',  encoding='utf-8')
+    if not scanner_has_error:
+        scanner_error_file.write('There is no lexical error.')
     else:
-        error_file.write(error_info.format_to_text())
-    error_file.close()
+        scanner_error_file.write(scanner_error_info.format_to_text())
+    scanner_error_file.close()
 
     symbol_file = open('symbol_table.txt', 'w',  encoding='utf-8')
     symbol_file.write(symbol_table.format_to_text())
@@ -131,6 +160,13 @@ def main():
     token_file = open('parse_tree.txt', 'w',  encoding='utf-8')
     token_file.write(str(tree))
     token_file.close()
+    
+    parser_error_file = open('syntax_errors.txt', 'w', encoding='utf-8')
+    if not parser_has_error:
+        parser_error_file.write('There is no syntax error.')
+    else:
+        parser_error_file.write(parser_error_info.format_to_text2())
+    parser_error_file.close()
 
 
 if __name__=="__main__":

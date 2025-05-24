@@ -10,6 +10,13 @@ class LineInfo:
     
     def add_counter(self, count):
         self.counter += count
+    
+    def format_to_text2(self):
+        text = ""
+        for counter, infos in sorted(self.infos.items()):
+            for info in infos:
+                text += "#" + str(counter) + " : syntax error, " +  info + "\n"
+        return text
 
     def format_to_text(self):
         text = ""
