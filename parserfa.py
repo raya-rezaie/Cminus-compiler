@@ -62,10 +62,10 @@ class ParserFA:
             if not tnt: # epsilon transition, last priority 
                 ep_next_state = to_s
             elif tnt.matches(token):
-                if tnt is NonTerminal:
+                if isinstance(tnt, NonTerminal):
                     return (to_s, tnt.call(token))
-                return (to_s, Tree(str(tnt)))
-        return (ep_next_state, Tree("epsilon"))
+                return (to_s, Tree(format_token(token)))
+        return (ep_next_state, None)
     
 
 class Tree:
@@ -74,10 +74,15 @@ class Tree:
         self.children = children # each child is a tree itself
 
     def __str__(self):
-        return self.str_aux("")
+        return self.str_aux("", True, True)
         
-    def str_aux(self, tab):
-        res = tab + self.value + "\n"
-        for child in self.children:
-            res += child.str_aux(tab + "\t")
+    def str_aux(self, tab, last, first):
+        res = tab + ("└── " if last else "├── ") + self.value + "\n"
+        if first:
+            res = self.value + "\n"
+        i = 0
+        while i < len(self.children):
+            child = self.children[i]
+            res += child.str_aux((tab if first else (tab + ("    " if last else "│   "))), i == (len(self.children) - 1), False)
+            i += 1
         return res

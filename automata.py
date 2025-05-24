@@ -107,3 +107,8 @@ class Automata:
                     if (not transition[0] in to_states):
                         to_states.append(transition[0])
         return to_states
+
+def format_token(token):
+    if token[0] == Token.EOF:
+        return "$"
+    return "(" + token[0].value + ", " + token[1] + ")"

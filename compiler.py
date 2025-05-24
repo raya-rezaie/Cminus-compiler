@@ -8,6 +8,8 @@ from lineinfo import *
 from cminusautomata import *
 from cminusparsefa import *
 
+kept_token = None
+
 def get_next_token_aux():
     global cminusautomata
     global reader
@@ -36,6 +38,11 @@ def get_next_token():
     global error_info
     global has_error
     global line_no
+    global kept_token
+    if kept_token:
+        temp = kept_token
+        kept_token = None
+        return temp
     if reader.read():
         reader.back()
         state_type, next_token, newlines = get_next_token_aux()
@@ -61,16 +68,26 @@ def get_next_token():
 def parser():
     startNT = cminusParseFA(apply_fa)
     next_token = get_next_token()
-    print("next token: ", next_token)
     tree = startNT.call(next_token)
     return tree
+
+def keep_token(token):
+    global kept_token
+    kept_token = token
 
 def apply_fa(fa, token):
     current_state = fa.getStartState()
     subtrees = []
-    while not current_state.is_terminal():
+    while True:
         current_state, tree = fa.nextState(current_state, token)
-        subtrees.append(tree)
+        if tree:
+            subtrees.append(tree)
+        else:
+            subtrees.append(Tree("epsilon"))
+        if not tree:
+            keep_token(token)
+        if current_state.is_terminal():
+            break
         token = get_next_token()
     return subtrees
         
@@ -93,22 +110,26 @@ def main():
     line_no = 1
 
     tree = parser()
-    print(tree)
 
     # SCANNER FILES
-    error_file = open('lexical_errors.txt', 'w' ,  encoding='utf-8')
+    error_file = open('lexical_errors.txt', 'w',  encoding='utf-8')
     if not has_error:
         error_file.write('There is no lexical error.')
     else:
         error_file.write(error_info.format_to_text())
     error_file.close()
 
-    symbol_file = open('symbol_table.txt', 'w' ,  encoding='utf-8')
+    symbol_file = open('symbol_table.txt', 'w',  encoding='utf-8')
     symbol_file.write(symbol_table.format_to_text())
     symbol_file.close()
 
-    token_file = open('tokens.txt', 'w' ,  encoding='utf-8')
+    token_file = open('tokens.txt', 'w',  encoding='utf-8')
     token_file.write(token_info.format_to_text())
+    token_file.close()
+
+    # PARSER FILES
+    token_file = open('parse_tree.txt', 'w',  encoding='utf-8')
+    token_file.write(str(tree))
     token_file.close()
 
 

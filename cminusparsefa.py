@@ -34,7 +34,7 @@ def cminusParseFA(apply_fa):
     program = NonTerminal([INT, VOID, EOF], apply_fa, "Program")
     declaration_list = NonTerminal([INT, VOID, ID, SEMICOLON, NUM, OPENPAR, OPENCURLY, CLOSECURLY, BREAK, IF, WHILE, RETURN, PLUS, MINUS, EOF], apply_fa, "DeclarationList")
     declaration = NonTerminal([INT, VOID], apply_fa, "Declaration")
-    declaration_initial = NonTerminal([INT, VOID], apply_fa, "Declaration Initial")
+    declaration_initial = NonTerminal([INT, VOID], apply_fa, "DeclarationInitial")
     declaration_prime = NonTerminal([SEMICOLON, OPENBRACKET, OPENPAR], apply_fa, "DeclarationPrime")
     var_declaration_prime = NonTerminal([SEMICOLON, OPENBRACKET], apply_fa, "VarDeclarationPrime")
     fun_declaration_prime = NonTerminal([OPENPAR], apply_fa, "FunDeclarationPrime")
@@ -83,7 +83,7 @@ def cminusParseFA(apply_fa):
     b.set_fa(create_fa([[expression], [OPENBRACKET, expression, CLOSEBRACKET, h], [simple_expression_prime]]))
 
     # 1. PROGRAM
-    program.set_fa(create_fa([[declaration_list]]))
+    program.set_fa(create_fa([[declaration_list, EOF]]))
 
     # 2. DECLARATION LIST
     declaration_list.set_fa(create_fa([[declaration, declaration_list], [None]]))
