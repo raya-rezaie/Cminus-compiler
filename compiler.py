@@ -69,9 +69,26 @@ def get_next_token():
         return (Token.EOF, "$")
 
 def parser():
+    global parser_has_error
+    global parser_error_info
     startNT = cminusParseFA(apply_fa)
     next_token = get_next_token()
+    err = startNT.handleErrorStartNT(next_token)
+    is_EOF = True
+    while err and is_EOF:
+        if next_token[0] == Token.EOF:
+            is_EOF = False
+        if err == SyntaxError.ILLEGAL:
+            parser_has_error = True
+            if next_token[0] == Token.EOF:
+                parser_error_info.add_info('Unexpected ' + token_type(next_token))
+            else:
+                parser_error_info.add_info('illegal ' + token_type(next_token))
+            next_token = get_next_token()
+            err = startNT.handleErrorStartNT(next_token)
     tree = startNT.call(next_token)
+    if tree.children[-1].value != "$" and not parser_has_error:
+        tree.children.append(Tree("$"))
     return tree
 
 def keep_token(token):
@@ -100,8 +117,10 @@ def apply_fa(fa, token):
                 current_state = tree[0]
             elif next_state == SyntaxError.ILLEGAL:
                 if token[0] == Token.EOF:
+                    parser_has_error = True
                     parser_error_info.add_info('Unexpected ' + token_type(token))
                 else:
+                    parser_has_error = True
                     parser_error_info.add_info('illegal ' + token_type(token))
         else:
             if tree:

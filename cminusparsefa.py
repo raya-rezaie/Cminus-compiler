@@ -32,7 +32,7 @@ def cminusParseFA(apply_fa):
 
     # NONTERMINALS
     program = NonTerminal([INT, VOID, EOF], 
-                          [EOF], apply_fa, "Program")
+                          [], apply_fa, "Program")
     declaration_list = NonTerminal([INT, VOID, ID, SEMICOLON, NUM, OPENPAR, OPENCURLY, CLOSECURLY, BREAK, IF, WHILE, RETURN, PLUS, MINUS, EOF],
                                    [ID, SEMICOLON, NUM, OPENPAR, OPENCURLY, CLOSECURLY, BREAK, IF, WHILE, RETURN, PLUS, MINUS, EOF], apply_fa, "DeclarationList")
     declaration = NonTerminal([INT, VOID], 

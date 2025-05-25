@@ -47,6 +47,15 @@ class NonTerminal:
             if p.matches(token):
                 return True
         return False
+    
+    def handleErrorStartNT(self, token):
+        for p in self.predict:
+            if p.matches(token):
+                return None
+        for f in self.follow:
+            if f.matches(token):
+                return SyntaxError.MISSINGNT
+        return SyntaxError.ILLEGAL
 
 
 class ParserFA:
@@ -80,7 +89,6 @@ class ParserFA:
             return (ep_next_state, None)
         
         # syntax error if reached here
-        
         link = self.transitions[from_state][0]
         if isinstance(link[1], Terminal):
             return (SyntaxError.MISSINGT, link)
@@ -88,6 +96,7 @@ class ParserFA:
             if f.matches(token):
                 return (SyntaxError.MISSINGNT, link) # token in follow (self.nt)
         return (SyntaxError.ILLEGAL, link) # token not in follow (self.nt)
+
 
 
 class Tree:
