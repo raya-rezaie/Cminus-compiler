@@ -12,9 +12,17 @@ class SemanticAction:
                 self.pid(self ,input_var)
             case "add":
                 self.add_sub("ADD")
-            case "SUB":
+            case "sub":
                 self.add_sub("SUB")
-            case 
+            case "dclr_arr":
+                self.declare_arr()
+            case "dclr_var":
+                self.declare_var()
+            case "print":
+                self.print()
+                
+                
+
     def pid(self,inputVar):
         p = findaddr(inputVar)
         self.stack.pop()
@@ -33,7 +41,8 @@ class SemanticAction:
     def declare_arr():
         pass
     def print():
-        
+        pass
+    
             
 
         
