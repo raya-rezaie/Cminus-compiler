@@ -1,13 +1,46 @@
 from enum import Enum
+INTSIZE = 4
 
-
-class memory():
-    def __init__(self):
+class run_time_memory():
+    def __init__(self , program_block , data_block , temporories):
+        self.pb = program_block
+        self.db = data_block
+        self.temp = temporories
+class temporaryBlock():
+    def __init__(self, base, bound, index):
+        self.base = base
+        self.bound = bound
+        self.index = base
         self.data = {}
-    def write(self, address, value):
-        self.data[address] = value
-    def read(self , address):
-        return self.data.get(address , None)
+    def get_temp(self):
+        i = self.index
+        self.index +=4
+        return  i
+class programBlock():
+    def __init__(self , base , bound):
+        self.base = base
+        self.bound = bound
+        self.index = base
+        self.block = {}
+    def add_instruction(self ,instruction , ind):
+        self.block[ind] = instruction
+class dataBlock():
+    def __init__(self, base, bound):
+        self.base = base
+        self.bound = bound
+        self.index = base
+        self.block = {}
+
+        
+        
+        
+        
+        
+# def write(self, address, value):
+#        self.data[address] = value
+# 
+#def read(self , address):
+#return self.data.get(address , None)'''
 
 
 class Tree_address_codes():
@@ -22,12 +55,9 @@ class Tree_address_codes():
                 elif operand[i].startswith("@"):
                     addr = int(self.op2[1:])
                     instruction[i] = memory.read(addr)     
-                else:
+                
+         
                         
                 
             
         
-        def action(self):
-            match self.opcode:
-                case "ADD":
-                    if self.op1.startswith()

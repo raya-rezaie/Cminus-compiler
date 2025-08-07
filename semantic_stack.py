@@ -19,7 +19,7 @@ class SemantciStack:
             return 0
         else:
             return 1
-    def top(self):
-        
+    def top(self, offset=0):
+        return self.stack[self.sp - offset - 1]
     
             

@@ -1,18 +1,41 @@
-from aux import *
+from auxFuncts import *
 from semantic_stack import * 
+from semantic_analayzer import *
 class SemanticAction:
     def __init__(self):
         self.type()
+
         
-    def get_func_by_name(name , stack):
+    def get_func_by_name(self ,name , input_var):
         match name:
             case "pid":
-                pid(self ,inputVar)
+                self.pid(self ,input_var)
             case "add":
-                add_mult()
-    def pid(self,inputVar , stack):
+                self.add_sub("ADD")
+            case "SUB":
+                self.add_sub("SUB")
+            case 
+    def pid(self,inputVar):
         p = findaddr(inputVar)
-        stack.pop()
-    def add_mult(action):
+        self.stack.pop()
+    def add_sub(action):
+        t = temps.get_temp()
+        program_block.add_instruction([action , stack.top() , stack.pop(1) , t])
+        program_block.index += 1
+        stack.pop(2)
+        stack.push(t)
+    def assign():
+        program_block.add_instruction(["ASSIGN" , stack.top() , stack.pop(1)])
+        program_block.index += 1
+        stack.pop(2)
+    def declare_var():
+        pass
+    def declare_arr():
+        pass
+    def print():
+        
+            
+
+        
         
         
