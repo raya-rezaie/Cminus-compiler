@@ -1,0 +1,84 @@
+Program -> DeclarationList
+DeclarationList -> Declaration DeclarationList
+DeclarationList -> EPSILON
+Declaration -> DeclarationInitial DeclarationPrime
+DeclarationInitial -> TypeSpecifier ID #save_id                                                                         ; keep the id of var/function in stack (for #update_var_type, #update_var_type_len, ...)
+DeclarationPrime -> FunDeclarationPrime
+DeclarationPrime -> VarDeclarationPrime
+VarDeclarationPrime -> ; #update_var_type                                                                               ; update the type of var in symbol table
+VarDeclarationPrime -> [ NUM ] ; #update_var_type_len                                                                   ; update the type and length of var in symbol table
+FunDeclarationPrime -> ( Params ) #update_func_params CompoundStmt #return_to_call_point                                ? NOT SURE IF NECESSARY WITH #save_ret_val_jmp
+TypeSpecifier -> int #save_dclr_type_int
+TypeSpecifier -> void #save_dclr_type_void
+Params -> int ID #save_id ParamPrime ParamList
+Params -> void
+ParamList -> , Param ParamList
+ParamList -> EPSILON
+Param -> DeclarationInitial ParamPrime
+ParamPrime -> [ ] #save_param_list
+ParamPrime -> EPSILON #save_param_norm
+CompoundStmt -> { #save_scope DeclarationList StatementList #fill_break }                                               ; save scope in case of breaks and fill jmp location for breaks after reaching end of scope
+StatementList -> Statement StatementList
+StatementList -> EPSILON
+Statement -> ExpressionStmt
+Statement -> CompoundStmt
+Statement -> SelectionStmt
+Statement -> IterationStmt
+Statement -> ReturnStmt
+ExpressionStmt -> Expression ;
+ExpressionStmt -> break ; #save_jmp_out_scope                                                                           ; save space to later fill with the next line of code after current scope
+ExpressionStmt -> ;
+SelectionStmt -> if ( Expression ) #save_if_cond_jpf Statement else #fill_if_cond_jpf Statement #fill_if_cond_jpt
+IterationStmt -> while #loc_while_cond_before ( Expression ) #save_while_cond_jpf Statement #fill_while
+ReturnStmt -> return ReturnStmtPrime                                                                                    ? #return_to_call_point HANDLES RETURN, NO NEED FOR EXTRA MEASURES
+ReturnStmtPrime -> ;
+ReturnStmtPrime -> Expression ;                                                                                         ? AUTOMATICALLY SAVED ON STACK, NO NEED TO SAVE
+_____________________________________________________
+Expression -> SimpleExpressionZegond
+Expression -> ID B
+B -> = Expression
+B -> [ Expression ] H
+B -> SimpleExpressionPrime
+H -> = Expression
+H -> G D C
+SimpleExpressionZegond -> AdditiveExpressionZegond C
+SimpleExpressionPrime -> AdditiveExpressionPrime C
+C -> Relop AdditiveExpression
+C -> EPSILON
+Relop -> <
+Relop -> ==
+AdditiveExpression -> Term D
+AdditiveExpressionPrime -> TermPrime D
+AdditiveExpressionZegond -> TermZegond D
+D -> Addop Term D
+D -> EPSILON
+Addop -> +
+Addop -> -
+Term -> SignedFactor G
+TermPrime -> SignedFactorPrime G
+TermZegond -> SignedFactorZegond G
+G -> * SignedFactor G
+G -> EPSILON
+SignedFactor -> + Factor
+SignedFactor -> - Factor
+SignedFactor -> Factor
+SignedFactorPrime -> FactorPrime
+SignedFactorZegond -> + Factor
+SignedFactorZegond -> - Factor
+SignedFactorZegond -> FactorZegond
+Factor -> ( Expression )
+Factor -> ID VarCallPrime
+Factor -> NUM
+VarCallPrime -> ( Args )
+VarCallPrime -> VarPrime
+VarPrime -> [ Expression ]
+VarPrime -> EPSILON
+FactorPrime -> ( Args )
+FactorPrime -> EPSILON
+FactorZegond -> ( Expression )
+FactorZegond -> NUM
+Args -> ArgList
+Args -> EPSILON
+ArgList -> Expression ArgListPrime
+ArgListPrime -> , Expression ArgListPrime
+ArgListPrime -> EPSILON
