@@ -1,0 +1,7 @@
+1.	(KEYWORD, void) (ID, min) (SYMBOL, () (ID, voidd) (SYMBOL, )) (SYMBOL, {) 
+2.	(KEYWORD, if) (SYMBOL, () (ID, arr) (SYMBOL, [) (ID, efg) (SYMBOL, ]) (SYMBOL, ==) (ID, bcd) (SYMBOL, )) 
+3.	(SYMBOL, {) (ID, b) (SYMBOL, =) (ID, b) (SYMBOL, +) (NUM, 1) (SYMBOL, ;) (SYMBOL, }) 
+4.	(KEYWORD, else) (KEYWORD, if) (ID, arr) (SYMBOL, [) (ID, efg) (SYMBOL, ]) (SYMBOL, ==) (NUM, 3) (SYMBOL, :) 
+5.	(SYMBOL, {) (ID, b) (SYMBOL, =) (ID, b) (SYMBOL, +) (NUM, 2) (SYMBOL, ;) 
+6.	(KEYWORD, return) (SYMBOL, ;) (SYMBOL, }) 
+7.	(KEYWORD, if) 
