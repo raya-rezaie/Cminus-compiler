@@ -1,7 +1,6 @@
 from auxFuncts import *
-from semantic_stack import * 
-from semantic_analayzer import *
 from enum import Enum
+from compiler import *
 class actionNames(Enum):
     pid = 0 ,
     add_or_sub = 1 , 
@@ -54,8 +53,6 @@ class SemanticAction:
             case "print":
                 self.print()
                 
-                
-
     def pid(self):
         p = findaddr(self.token)
         self.stack.pop()
