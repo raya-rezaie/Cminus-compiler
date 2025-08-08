@@ -1,6 +1,6 @@
 from collections import defaultdict
 from automata import *
-
+from semantic_actions import *
 class SyntaxError(Enum):
     ILLEGAL = 0
     MISSINGNT = 1
@@ -74,25 +74,31 @@ class ParserFA:
         self.states.append(state)
         self.actions.append(action)
         
-    def getAction(self, state):
-        for i in range(len(self.states)):
-            if state == self.states[i]:
-                return self.actions[i]
-        return None
+  #   def getAction(self, state):
+  #      for i in range(len(self.states)):
+  #          if state == self.states[i]:
+  #              return self.actions[i]
+  #      return None
 
-    def addTransition(self, from_s, to_s, tnt):
-        self.transitions[from_s].append((to_s, tnt)) # tnt == None represents epsilon
+    def addTransition(self, from_s, to_s, tnt , before_action, after_action):
+        self.transitions[from_s].append((to_s, tnt , before_action , after_action)) # tnt == None represents epsilon
 
     def nextState(self, from_state, token): # returns (next state, produced parse tree)
         ep_next_state = None
         for transition in self.transitions[from_state]:
-            to_s, tnt = transition
+            to_s, tnt , before_action , after_action = transition
             if not tnt: # epsilon transition, last priority 
                 ep_next_state = to_s
             elif tnt.matches(token):
+                action = SemanticAction(before_action , token)
+                action.get_func_by_name()
                 if isinstance(tnt, NonTerminal):
-                    return (to_s, tnt.call(token))
-                return (to_s, Tree(format_token(token)))
+                    temp = tnt.call(token) 
+                else:
+                   temp = Tree(format_token(token))
+                action = SemanticAction(after_action , token)
+                action.get_func_by_name()
+                return (to_s,temp)
         if ep_next_state:
             return (ep_next_state, None)
         

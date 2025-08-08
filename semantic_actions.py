@@ -2,14 +2,15 @@ from auxFuncts import *
 from semantic_stack import * 
 from semantic_analayzer import *
 class SemanticAction:
-    def __init__(self):
-        self.type()
+    def __init__(self , type , token):
+        self.type = type
+        self.token = token
 
         
-    def get_func_by_name(self ,name , input_var):
-        match name:
+    def get_func_by_name(self):
+        match self.type:
             case "pid":
-                self.pid(self ,input_var)
+                self.pid(self)
             case "add":
                 self.add_sub("ADD")
             case "sub":
@@ -23,8 +24,8 @@ class SemanticAction:
                 
                 
 
-    def pid(self,inputVar):
-        p = findaddr(inputVar)
+    def pid(self):
+        p = findaddr(self.token)
         self.stack.pop()
     def add_sub(action):
         t = temps.get_temp()
