@@ -256,7 +256,8 @@ def cminusParseFA(apply_fa):
     create_fa([[OPENPAR, args, CLOSEPAR], [None]], factor_prime)
 
     # 44. FACTOR ZEGOND
-    create_fa([[OPENPAR, expression, CLOSEPAR], [NUM]], factor_zegond)
+    create_fa([([OPENPAR, expression, CLOSEPAR], [None, None, None], [None, None, None]), 
+               ([NUM], ["push_num_ss"], [None])], factor_zegond)
 
     # 45. ARGS
     create_fa([[arg_list], [None]], args)
