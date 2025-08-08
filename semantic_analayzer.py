@@ -14,6 +14,5 @@ data = dataBlock(DB_BASE , DB_BOUND)
 temps = temporaryBlock(TP_BASE , TP_BOUND)
 
 #memory = run_time_memory()
-def semantic_anlayze():
-    
+
     

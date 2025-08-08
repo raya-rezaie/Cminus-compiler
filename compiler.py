@@ -7,7 +7,7 @@ from symboltable import *
 from lineinfo import *
 from cminusautomata import *
 from cminusparsefa import *
-
+from semantic_analayzer import *
 kept_token = None
 global_EOF = True
 
@@ -67,10 +67,11 @@ def get_next_token():
         return (state_type[1], next_token)
     else:
         return (Token.EOF, "$")
-
+    
 def parser():
     global parser_has_error
     global parser_error_info
+    
     startNT = cminusParseFA(apply_fa)
     next_token = get_next_token()
     err = startNT.handleErrorStartNT(next_token)
@@ -104,7 +105,6 @@ def apply_fa(fa, token):
     while global_EOF:
         if (token[0] == Token.EOF):
             EOF = False
-        #TODO: current state's action
         next_state, tree = fa.nextState(current_state, token)
         if isinstance(next_state, SyntaxError): # error handling
             if next_state == SyntaxError.MISSINGT or next_state == SyntaxError.MISSINGNT:
