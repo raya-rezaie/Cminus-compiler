@@ -104,6 +104,7 @@ def apply_fa(fa, token):
     while global_EOF:
         if (token[0] == Token.EOF):
             EOF = False
+        #TODO: current state's action
         next_state, tree = fa.nextState(current_state, token)
         if isinstance(next_state, SyntaxError): # error handling
             if next_state == SyntaxError.MISSINGT or next_state == SyntaxError.MISSINGNT:
