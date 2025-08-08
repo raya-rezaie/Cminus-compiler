@@ -187,13 +187,13 @@ def cminusParseFA(apply_fa):
     create_fa([[SEMICOLON], [expression, SEMICOLON]], return_stmt_prime)
 
     # 21. EXPRESSION
-    create_fa([[simple_expression_zegond], [ID, b]], expression)
+    create_fa([[simple_expression_zegond], [actionNames.pid, ID, b, actionNames.print]], expression)
 
     # 22. B
-    create_fa([[EQUAL, expression], [OPENBRACKET, expression, CLOSEBRACKET, h], [simple_expression_prime]], b)
+    create_fa([[EQUAL, expression, actionNames.assign], [OPENBRACKET, expression, CLOSEBRACKET, actionNames.calc_arr_addr, h], [simple_expression_prime]], b)
 
     # 23. H
-    create_fa([[EQUAL, expression], [g, d, c]], h)
+    create_fa([[EQUAL, expression, actionNames.assign], [g, d, c]], h)
 
     # 24. SIMPLE EXPRESSION ZEGOND
     create_fa([[additive_expression_zegond, c]], simple_expression_zegond)
@@ -202,10 +202,10 @@ def cminusParseFA(apply_fa):
     create_fa([[additive_expression_prime, c]], simple_expression_prime)
 
     # 26. C
-    create_fa([[relop, additive_expression], [None]], c)
+    create_fa([[relop, additive_expression, actionNames.relation], [None]], c)
 
     # 27. RELOP
-    create_fa([[LESS], [DOUBLEEQUAL]], relop)
+    create_fa([[actionNames.push_ss, LESS], [actionNames.push_ss, DOUBLEEQUAL]], relop)
 
     # 28. ADDITIVE EXPRESSION
     create_fa([[term, d]], additive_expression)
@@ -217,10 +217,10 @@ def cminusParseFA(apply_fa):
     create_fa([[term_zegond, d]], additive_expression_zegond)
 
     # 31. D
-    create_fa([[addop, term, d], [None]], d)
+    create_fa([[addop, term, actionNames.add_or_sub, d], [None]], d)
 
     # 32. ADDOP
-    create_fa([[PLUS], [MINUS]], addop)
+    create_fa([[actionNames.push_ss, PLUS], [actionNames.push_ss, MINUS]], addop)
 
     # 33. TERM
     create_fa([[signed_factor, g]], term)
@@ -232,7 +232,7 @@ def cminusParseFA(apply_fa):
     create_fa([[signed_factor_zegond, g]], term_zegond)
 
     # 36. G
-    create_fa([[MULT, signed_factor, g], [None]], g)
+    create_fa([[MULT, signed_factor, actionNames.mult, g], [None]], g)
 
     # 37. SIGNED FACTOR
     create_fa([[PLUS, factor], [MINUS, factor], [factor]], signed_factor)
@@ -244,19 +244,19 @@ def cminusParseFA(apply_fa):
     create_fa([[PLUS, factor], [MINUS, factor], [factor_zegond]], signed_factor_zegond)
 
     # 40. FACTOR
-    create_fa([[OPENPAR, expression, CLOSEPAR], [ID, var_call_prime], [NUM]], factor)
+    create_fa([[OPENPAR, expression, CLOSEPAR], [actionNames.pid, ID, var_call_prime], [actionNames.push_num_ss, NUM]], factor)
 
     # 41. VAR CALL PRIME
-    create_fa([[OPENPAR, args, CLOSEPAR], [var_prime]], var_call_prime)
+    create_fa([[actionNames.start_args, OPENPAR, args, CLOSEPAR, actionNames.check_args], [var_prime]], var_call_prime)
 
     # 42. VAR PRIME
-    create_fa([[OPENBRACKET, expression, CLOSEBRACKET], [None]], var_prime)
+    create_fa([[OPENBRACKET, expression, CLOSEBRACKET, actionNames.calc_arr_addr], [None]], var_prime)
 
     # 43. FACTOR PRIME
-    create_fa([[OPENPAR, args, CLOSEPAR], [None]], factor_prime)
+    create_fa([[actionNames.start_args, OPENPAR, args, CLOSEPAR, actionNames.check_args], [None]], factor_prime)
 
     # 44. FACTOR ZEGOND
-    create_fa([[actionNames.push_num_ss ,OPENPAR, expression, CLOSEPAR], [NUM]], factor_zegond)
+    create_fa([[OPENPAR, expression, CLOSEPAR], [actionNames.push_num_ss, NUM]], factor_zegond)
 
     # 45. ARGS
     create_fa([[arg_list], [None]], args)
