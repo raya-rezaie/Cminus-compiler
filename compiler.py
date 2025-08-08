@@ -124,10 +124,13 @@ def apply_fa(fa, token):
                     parser_has_error = True
                     parser_error_info.add_info('illegal ' + token_type(token))
         else:
-            if tree:
+            if tree == 23:
+                pass # executed action symbol
+            elif tree:
                 subtrees.append(tree)
             else:
                 subtrees.append(Tree("epsilon"))
+
             if not tree:
                 keep_token(token)
             current_state = next_state
