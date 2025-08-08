@@ -59,11 +59,10 @@ class NonTerminal:
 
 
 class ParserFA:
-    def __init__(self, startState, nt, startAction = None):
+    def __init__(self, startState, nt):
         self.startState = startState
         self.transitions = defaultdict(list)
         self.states = [self.startState]
-        self.actions = [startAction]
         self.nt = nt
         nt.set_fa(self)
     
@@ -72,7 +71,7 @@ class ParserFA:
     
     def addState(self, state, action):
         self.states.append(state)
-        self.actions.append(action)
+
         
   #   def getAction(self, state):
   #      for i in range(len(self.states)):
