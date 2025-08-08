@@ -136,22 +136,22 @@ def cminusParseFA(apply_fa):
     create_fa([[declaration_initial, declaration_prime]], declaration)
 
     # 4. DECLARATION INITIAL
-    create_fa([[type_specifier, ID]], declaration_initial)
+    create_fa([[actionNames.push_ss,type_specifier, ID]], declaration_initial)
 
     # 5. DECLARATION PRIME
     create_fa([[fun_declaration_prime], [var_declaration_prime]], declaration_prime)
 
     # 6. VAR DECLARATION PRIME
-    create_fa([[SEMICOLON], [OPENBRACKET, NUM, CLOSEBRACKET, SEMICOLON]], var_declaration_prime)
+    create_fa([[SEMICOLON , actionNames.dclr_var], [OPENBRACKET,actionNames.push_ss, NUM, CLOSEBRACKET, SEMICOLON , actionNames.dclr_var]], var_declaration_prime)
 
     # 7. FUN DECLARATION PRIME
-    create_fa([[OPENPAR, params, CLOSEPAR, compound_stmt]], fun_declaration_prime)
+    create_fa([[OPENPAR, params, CLOSEPAR,actionNames.update_func_params, compound_stmt , actionNames.end_func]], fun_declaration_prime)
 
     # 8. TYPE SPECIFIER
     create_fa([[INT], [VOID]], type_specifier)
 
     # 9. PARAMS
-    create_fa([[INT, ID, param_prime, param_list], [VOID]], params)
+    create_fa([[actionNames.push_ss, INT, ID, param_prime, param_list], [VOID]], params)
 
     # 10. PARAM LIST
     create_fa([[COMMA, param, param_list], [None]], param_list)
