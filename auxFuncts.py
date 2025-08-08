@@ -1,3 +1,3 @@
 def findaddr(input):
-    #TODO : after changing the sematic tabel it should return addr
+    #TODO : after changing the simbol tabel it should return addr
     return
