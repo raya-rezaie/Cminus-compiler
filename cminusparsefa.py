@@ -265,7 +265,7 @@ def cminusParseFA(apply_fa):
     create_fa([[expression, arg_list_prime]], arg_list)
 
     # 47. ARG LIST PRIME
-    create_fa([[COMMA, expression, arg_list_prime], [None]], arg_list_prime)
+    create_fa([([COMMA, expression, arg_list_prime], [], []), [None]], arg_list_prime)
 
     return program
 
@@ -277,11 +277,11 @@ def create_fa(rules, nt):
     for rule in rules:
         i = 0
         curstate = init_state
-        while i < len(rule) - 1:
+        while i < len(rule[0]) - 1:
             newState = State()
             fa.addState(newState)
-            fa.addTransition(curstate, newState, rule[i])
+            fa.addTransition(curstate, newState, rule[0][i], rule[1][i], rule[2][i])
             curstate = newState
             i+=1 
-        fa.addTransition(curstate, final_state, rule[-1])
+        fa.addTransition(curstate, final_state, rule[0][-1], rule[1][-1], rule[2][-1])
     return fa
