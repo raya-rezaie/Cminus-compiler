@@ -12,16 +12,7 @@ from semantic_stack import *
 
 kept_token = None
 global_EOF = True
-#PB_BASE = 0
-#PB_BOUND = 99
-#DB_BASE = 100
-#DB_BOUND = 499
-#TP_BASE = 500
-#TP_BOUND = 1000
-#stack = SemanticStack()
-#program_block = programBlock(PB_BASE , PB_BOUND)
-#data = dataBlock(DB_BASE , DB_BOUND)
-#temps = temporaryBlock(TP_BASE , TP_BOUND)
+
 def get_next_token_aux():
     global cminusautomata
     global reader
@@ -82,8 +73,9 @@ def get_next_token():
 def parser():
     global parser_has_error
     global parser_error_info
+    global semantic_action
     
-    startNT = cminusParseFA(apply_fa)
+    startNT = cminusParseFA(apply_fa, semantic_action)
     next_token = get_next_token()
     err = startNT.handleErrorStartNT(next_token)
     is_EOF = True
@@ -163,6 +155,7 @@ def main():
     global scanner_has_error
     global parser_has_error
     global line_no
+    global semantic_action
     cminusautomata = buildCMinusAutomata()
     reader = CharReader('input.txt')
     symbol_table = SymbolTable(['break', 'else', 'if', 'int', 'while', 'return', 'void'])
@@ -172,6 +165,17 @@ def main():
     parser_error_info = LineInfo()
     parser_has_error = False
     line_no = 1
+    
+    # CODE GENERATION INITIALIZATION
+    PB_BASE = 0
+    PB_BOUND = 99
+    DB_BASE = 100
+    DB_BOUND = 499
+    TP_BASE = 500
+    TP_BOUND = 1000
+    stack = SemanticStack()
+    runtime_mem = RunTimeMemory(programBlock(PB_BASE , PB_BOUND), dataBlock(DB_BASE, DB_BOUND), dataBlock(TP_BASE, TP_BOUND))
+    semantic_action = SemanticAction(runtime_mem, stack, symbol_table)
 
     tree = parser()
 

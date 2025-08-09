@@ -59,16 +59,17 @@ class NonTerminal:
 
 
 class ParserFA:
-    def __init__(self, startState, nt):
+    def __init__(self, startState, nt, semantic_actions):
         self.startState = startState
         self.transitions = defaultdict(list)
         self.states = [self.startState]
         self.nt = nt
+        self.semantic_actions = semantic_actions
         nt.set_fa(self)
     
     def getStartState(self):
         return self.startState
-    
+
     def addState(self, state):
         self.states.append(state)
 
@@ -88,13 +89,16 @@ class ParserFA:
             to_s, tnt = transition
             if not tnt: # epsilon transition, last priority 
                 ep_next_state = to_s
-            elif tnt is actionNames:
-                next_transition = self.transitions[to_s][0]
-                _, next_transition_tnt = next_transition
-                if next_transition_tnt.matches(token):
-                    action = SemanticAction(tnt, token)
-                    action.get_func_by_name()
-                    return (to_s, 23)
+            elif isinstance(tnt, actionNames):
+                if to_s.is_terminal():
+                    self.semantic_actions.exec_func(tnt, token)
+                else:
+                    _, next_transition_tnt = self.transitions[to_s][0]
+                    if next_transition_tnt.matches(token):
+                        self.semantic_actions.exec_func(tnt, token)
+                    else:
+                        continue
+                return (to_s, 23)
             elif tnt.matches(token):
                 # action = SemanticAction(before_action , token)
                 # action.get_func_by_name()

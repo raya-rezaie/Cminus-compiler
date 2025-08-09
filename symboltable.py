@@ -57,6 +57,9 @@ class SymbolTable:
                 return (self.symbols[i], self.types[i], self.locs[i], self.lens[i])
         return None
     
+    def find_addr(self, symbol):
+        return self.get_symbol_full(symbol)[2]
+    
     def format_to_text(self):
         text = ""
         for symbol in self.symbols:

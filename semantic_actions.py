@@ -1,4 +1,4 @@
-from auxFuncts import *
+from run_time_memory import *
 from enum import Enum
 class actionNames(Enum):
     pid = 0 ,
@@ -28,37 +28,40 @@ class actionNames(Enum):
     push_num_ss =  24,
     start_args = 25,
     check_args = 26,
-    calc_arr_addr = 27,
-    mult = 28
+    mult = 27
     
 class SemanticAction:
-    def __init__(self, token , stack , pb , tb , db , number):
-        self.token = token
-        self.pb = pb
-        self.tb = tb
-        self.stack = stack
-        self.number = number
+    def __init__(self, runtime_memory, semantic_stack, symbol_table):
+        # self.token = token
+        self.pb = runtime_memory.get_pb()
+        self.tb = runtime_memory.get_temp()
+        self.db = runtime_memory.get_db()
+        self.stack = semantic_stack
+        self.symbol_table = symbol_table
+        # self.number = number
 
         
-    def get_func_by_name(self):
-        match self.type:
-            case "pid":
-                self.pid(self)
-            case "add":
-                self.add_sub("ADD")
-            case "sub":
-                self.add_sub("SUB")
+    def exec_func(self, type, token):
+        match type:
+            case actionNames.pid:
+                self.pid(token)
+            # case "add":
+            #     self.add_sub("ADD")
+            # case "sub":
+            #     self.add_sub("SUB")
             case "dclr_arr":
                 self.declare_arr()
             case "dclr_var":
                 self.declare_var()
             case "print":
                 self.print()
+            case actionNames.loc_while_cond_before:
+                self.loc_while_cond_before(token)
                 
-    def pid(self):
-        p = findaddr(self.token)
+    def pid(self, token):
+        p = self.symbol_table.findaddr(token)
         self.stack.pop()
-    def add_sub(self ,action):
+    def add_sub(self, action):
         t = self.tb.get_temp()
         self.pb.add_instruction([action , self.stack.top() , self.stack.pop(1) , t])
         self.pb.index += 1
@@ -74,9 +77,5 @@ class SemanticAction:
         pass
     def print():
         pass
-    
-            
-
-        
-        
-        
+    def loc_while_cond_before(self, token):
+        pass
