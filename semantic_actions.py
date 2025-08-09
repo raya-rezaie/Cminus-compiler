@@ -58,7 +58,7 @@ class SemanticAction:
     def pid(self):
         p = findaddr(self.token)
         self.stack.pop()
-    def add_sub(self ,action):
+    def add_or_sub(self ,action):
         t = self.tb.get_temp()
         self.pb.add_instruction([action , self.stack.top() , self.stack.pop(1) , t])
         self.pb.index += 1
@@ -74,6 +74,17 @@ class SemanticAction:
         pass
     def print():
         pass
+    def push_ss():
+        pass
+    def update_func_params():
+        pass
+    def end_func():
+        pass
+    def save_param_list():
+        pass
+    def save_param_norm():
+        pass
+    def 
     
             
 
