@@ -6,7 +6,6 @@ def cminusParseFA(apply_fa):
     ID = Terminal(Token.ID, False)
     NUM = Terminal(Token.NUM, False)
     EOF = Terminal(Token.EOF, False)
-
     SEMICOLON = Terminal(";")
     COLON = Terminal(":")
     COMMA = Terminal(",")
