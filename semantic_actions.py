@@ -1,6 +1,5 @@
 from auxFuncts import *
 from enum import Enum
-from compiler import *
 class actionNames(Enum):
     pid = 0 ,
     add_or_sub = 1 , 
@@ -33,9 +32,12 @@ class actionNames(Enum):
     mult = 28
     
 class SemanticAction:
-    def __init__(self , type , token):
-        self.type = type
+    def __init__(self, token , stack , pb , tb , db , number):
         self.token = token
+        self.pb = pb
+        self.tb = tb
+        self.stack = stack
+        self.number = number
 
         
     def get_func_by_name(self):
@@ -56,16 +58,16 @@ class SemanticAction:
     def pid(self):
         p = findaddr(self.token)
         self.stack.pop()
-    def add_sub(action):
-        t = temps.get_temp()
-        program_block.add_instruction([action , stack.top() , stack.pop(1) , t])
-        program_block.index += 1
-        stack.pop(2)
-        stack.push(t)
-    def assign():
-        program_block.add_instruction(["ASSIGN" , stack.top() , stack.pop(1)])
-        program_block.index += 1
-        stack.pop(2)
+    def add_sub(self ,action):
+        t = self.tb.get_temp()
+        self.pb.add_instruction([action , self.stack.top() , self.stack.pop(1) , t])
+        self.pb.index += 1
+        self.stack.pop(2).x
+        self.stack.push(t)
+    def assign(self):
+        self.pb.add_instruction(["ASSIGN" , self.stack.top() , self.stack.pop(1)])
+        self.pb.index += 1
+        self.stack.pop(2)
     def declare_var():
         pass
     def declare_arr():

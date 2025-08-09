@@ -151,7 +151,7 @@ def cminusParseFA(apply_fa):
     create_fa([[INT], [VOID]], type_specifier)
 
     # 9. PARAMS
-    create_fa([[actionNames.push_ss, INT, ID, param_prime, param_list], [VOID]], params)
+    create_fa([[actionNames.push_ss, INT,actionNames.push_ss, ID, param_prime, param_list], [VOID]], params)
 
     # 10. PARAM LIST
     create_fa([[COMMA, param, param_list], [None]], param_list)
@@ -160,10 +160,10 @@ def cminusParseFA(apply_fa):
     create_fa([[declaration_initial, param_prime]], param)
 
     # 12. PARAM PRIME
-    create_fa([[OPENBRACKET, CLOSEBRACKET], [None]], param_prime)
+    create_fa([[OPENBRACKET, CLOSEBRACKET , actionNames.save_param_list], [None , actionNames.save_param_norm]], param_prime)
 
     # 13. COMPOUND STMT
-    create_fa([[OPENCURLY, declaration_list, statement_list, CLOSECURLY]], compound_stmt)
+    create_fa([[OPENCURLY,actionNames.save_scope,  declaration_list, statement_list, actionNames.fill_break ,CLOSECURLY]], compound_stmt)
 
     # 14. STATEMENT LIST
     create_fa([[statement, statement_list], [None]], statement_list)
@@ -172,10 +172,10 @@ def cminusParseFA(apply_fa):
     create_fa([[expression_stmt], [compound_stmt], [selection_stmt], [iteration_stmt], [return_stmt]], statement)
 
     # 16. EXPRESSION STMT
-    create_fa([[expression, SEMICOLON], [BREAK, SEMICOLON], [SEMICOLON]], expression_stmt)
+    create_fa([[expression, SEMICOLON], [BREAK, SEMICOLON , actionNames.save_jmp_out_scope], [SEMICOLON]], expression_stmt)
 
     # 17. SELECTION STMT
-    create_fa([[IF, OPENPAR, expression, CLOSEPAR, statement, ELSE, statement]], selection_stmt)
+    create_fa([[IF, OPENPAR, expression,CLOSEPAR,actionNames.save_while_cond_jpf ,statement, ELSE, statement]], selection_stmt)
 
     # 18. ITERATION STMT
     create_fa([[WHILE, OPENPAR, expression, CLOSEPAR, statement]], iteration_stmt)
@@ -184,7 +184,7 @@ def cminusParseFA(apply_fa):
     create_fa([[RETURN, return_stmt_prime]], return_stmt)
 
     # 20. RETURN STMT PRIME
-    create_fa([[SEMICOLON], [expression, SEMICOLON]], return_stmt_prime)
+    create_fa([[actionNames.return_jp ,SEMICOLON], [expression,actionNames.save_return_value ,SEMICOLON]], return_stmt_prime)
 
     # 21. EXPRESSION
     create_fa([[simple_expression_zegond], [actionNames.pid, ID, b, actionNames.print]], expression)

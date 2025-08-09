@@ -1,5 +1,5 @@
 from collections import defaultdict
-class SemantciStack:
+class SemanticStack:
     def __init__(self):
         self.stack = []
         self.sp = 0
