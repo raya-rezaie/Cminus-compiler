@@ -1,5 +1,6 @@
 from run_time_memory import *
 from enum import Enum
+
 class actionNames(Enum):
     pid = 0 ,
     add_or_sub = 1 , 
@@ -56,7 +57,9 @@ class SemanticAction:
             case "print":
                 self.print()
             case actionNames.loc_while_cond_before:
-                self.loc_while_cond_before(token)
+                self.loc_while_cond_before()
+            case actionNames.save_while_cond_jpf:
+                self.save_while_cond_jpf()
                 
     def pid(self, token):
         p = self.symbol_table.findaddr(token)
@@ -77,5 +80,28 @@ class SemanticAction:
         pass
     def print():
         pass
-    def loc_while_cond_before(self, token):
-        pass
+
+    def loc_while_cond_before(self):
+        self.stack.push(self.pb.get_index())
+
+    def save_while_cond_jpf(self):
+        index = self.pb.get_index()
+        self.stack.push(index)
+        self.pb.set_index(index + 1)
+
+    def fill_while(self): # assumes stack = pc after while cond | result of cond | pc before while cond
+        uncond_jmp_idx = self.pb.get_index()
+        # add conditional jump after checking while condition
+        cond_jmp = ThreeAddressCode(ThreeAddressCodeType.jpf, self.stack.top(1), uncond_jmp_idx + 1)
+        cond_jmp_idx = self.stack.top(0)
+        if cond_jmp_idx.isdigit():
+            self.pb.add_instruction_at(cond_jmp, int(cond_jmp_idx))
+        else:
+            pass # bad stack, maybe report
+        
+        # add unconditional jump to before while condition, after while instructions
+        uncond_jmp = ThreeAddressCode(ThreeAddressCodeType.jp, self.stack.top(2))
+        self.pb.add_instruction_at(uncond_jmp, uncond_jmp_idx)
+        
+        self.pd.set_index(uncond_jmp_idx +  1)
+        self.stack.pop(3)
