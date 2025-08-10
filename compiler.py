@@ -73,9 +73,9 @@ def get_next_token():
 def parser():
     global parser_has_error
     global parser_error_info
-    global semantic_action
+    global code_gen
     
-    startNT = cminusParseFA(apply_fa, semantic_action)
+    startNT = cminusParseFA(apply_fa, code_gen)
     next_token = get_next_token()
     err = startNT.handleErrorStartNT(next_token)
     is_EOF = True
@@ -155,7 +155,7 @@ def main():
     global scanner_has_error
     global parser_has_error
     global line_no
-    global semantic_action
+    global code_gen
     cminusautomata = buildCMinusAutomata()
     reader = CharReader('input.txt')
     symbol_table = SymbolTable(['break', 'else', 'if', 'int', 'while', 'return', 'void'])
@@ -175,7 +175,7 @@ def main():
     TP_BOUND = 1000
     stack = SemanticStack()
     runtime_mem = RunTimeMemory(programBlock(PB_BASE , PB_BOUND), dataBlock(DB_BASE, DB_BOUND), dataBlock(TP_BASE, TP_BOUND))
-    semantic_action = SemanticAction(runtime_mem, stack, symbol_table)
+    code_gen = code_generator(runtime_mem, stack, symbol_table)
 
     tree = parser()
 

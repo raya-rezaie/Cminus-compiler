@@ -75,7 +75,7 @@ class dataBlock():
         return None # invalid index => maybe throw error
 
     def set_value(self, index, value):
-        array_idx = self._calc_array_idx(index)
+        array_idx = self._calc_array_idx(index)   #shouldnt the index be self.index?
         if 0 <= array_idx < len(self.block):
             self.block[array_idx] = value
 

@@ -31,7 +31,7 @@ class actionNames(Enum):
     check_args = 26,
     mult = 27
     
-class SemanticAction:
+class code_generator:
     def __init__(self, runtime_memory, semantic_stack, symbol_table):
         # self.token = token
         self.pb = runtime_memory.get_pb()
@@ -50,11 +50,11 @@ class SemanticAction:
             #     self.add_sub("ADD")
             # case "sub":
             #     self.add_sub("SUB")
-            case "dclr_arr":
+            case actionNames.dclr_arr:
                 self.declare_arr()
-            case "dclr_var":
+            case actionNames.dclr_var:
                 self.declare_var()
-            case "print":
+            case actionNames.print:
                 self.print()
             case actionNames.loc_while_cond_before:
                 self.loc_while_cond_before()
@@ -63,7 +63,7 @@ class SemanticAction:
                 
     def pid(self, token):
         p = self.symbol_table.findaddr(token)
-        self.stack.pop()
+        self.stack.push(p)
     def add_sub(self, action):
         t = self.tb.get_temp()
         self.pb.add_instruction([action , self.stack.top() , self.stack.pop(1) , t])
@@ -71,15 +71,24 @@ class SemanticAction:
         self.stack.pop(2).x
         self.stack.push(t)
     def assign(self):
-        self.pb.add_instruction(["ASSIGN" , self.stack.top() , self.stack.pop(1)])
+        self.pb.add_instruction(["ASSIGN" , self.stack.top() , self.stack.pop(1)])   #shouldnt it be 1 and 2?
         self.pb.index += 1
         self.stack.pop(2)
-    def declare_var():
+    def declare_var(self , token):
+        type = self.stack.pop()
+        name = self.stack.pop()
+        self.symbol_table.set_symbol_type(name , type)
+        self.symbol_table.set_symbol_len(name , 1)
         pass
     def declare_arr():
+        #dont know how to find the len
         pass
     def print():
         pass
+    def push_ss(self, token): 
+        self.stack.push(token[0])
+        self.stack.push(token[1])
+        #push the type and name of the var
 
     def loc_while_cond_before(self):
         self.stack.push(self.pb.get_index())
@@ -105,3 +114,7 @@ class SemanticAction:
         
         self.pd.set_index(uncond_jmp_idx +  1)
         self.stack.pop(3)
+    def save_scope():
+        #dont know where is the scope to save it
+        pass
+    

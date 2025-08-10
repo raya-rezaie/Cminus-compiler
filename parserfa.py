@@ -1,6 +1,6 @@
 from collections import defaultdict
 from automata import *
-from semantic_actions import *
+from code_gen import *
 class SyntaxError(Enum):
     ILLEGAL = 0
     MISSINGNT = 1
