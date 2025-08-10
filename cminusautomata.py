@@ -63,7 +63,7 @@ def buildCMinusAutomata():
     num_state = State((StateType.ACCEPT, Token.NUM))
     automata.addState(num_state, False)
     err_invalid_num_state = State((StateType.ERROR, Error.INVALID_NUM))
-    automata.addState(err_invalid_num_state, False) #TODO: change if 234d! is not (234d, invalid number) (!, invalid input)
+    automata.addState(err_invalid_num_state, False)
 
     automata.addTransition(start_state, num_state, alph09)
     automata.addTransition(num_state, num_state, alph09)
