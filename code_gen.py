@@ -1,6 +1,7 @@
 from run_time_memory import *
 from enum import Enum
 
+
 class actionNames(Enum):
     pid = 0 ,
     add_or_sub = 1 , 
@@ -60,10 +61,46 @@ class code_generator:
                 self.loc_while_cond_before()
             case actionNames.save_while_cond_jpf:
                 self.save_while_cond_jpf()
-                
+    def _format_token(self, token):
+        # Convert (TOKEN_TYPE, TOKEN_VALUE) or int address to TAC string
+        if token is None:
+            return None
+        if not isinstance(token, tuple) or len(token) != 2:
+            return str(token)
+
+        ttype, tval = token
+        if ttype == "NUM":
+            return f"#{tval}"
+        elif ttype == "ID":
+            addr = self.symbol_table.find_addr(tval)
+            if addr is None:
+                raise NameError(f"Variable '{tval}' not declared")
+            return str(addr)
+        elif ttype in ("SYMBOL", "KEYWORD"):
+            return str(tval)
+        else:
+            raise ValueError(f"Unknown token type {ttype}")
+    def new_temp(self):
+        #getting new temp
+        temp_addr = self.tb.alloc_memory()
+        if temp_addr == -1:
+            raise MemoryError("No temp space")
+        return temp_addr
+    def _emit(self, op_enum, o1=None, o2=None, r=None):
+        instr = ThreeAddressCode(
+            op_enum,
+            self._format_token(o1),
+            self._format_token(o2),
+            self._format_token(r)
+        )
+        return self.pb.add_instruction(instr)
+
     def pid(self, token):
-        p = self.symbol_table.findaddr(token)
-        self.stack.push(p)
+        entry = self.symbol_table.get_symbol_full(token)
+        if entry is None:
+            raise NameError(f"Undefined identifier {token}")
+        addr = entry[2]
+        self.stack.push(("ID", token))  # push raw token called for IDs
     def add_sub(self, action):
         t = self.tb.get_temp()
         self.pb.add_instruction([action , self.stack.top() , self.stack.pop(1) , t])
@@ -74,21 +111,41 @@ class code_generator:
         self.pb.add_instruction(["ASSIGN" , self.stack.top() , self.stack.pop(1)])   #shouldnt it be 1 and 2?
         self.pb.index += 1
         self.stack.pop(2)
+    def push_ss(self, token):
+        self.stack.push(token)
     def declare_var(self , token):
-        type = self.stack.pop()
+        #the data is supposed to be saved in db as names of the token or complete token
         name = self.stack.pop()
+        type = self.stack.pop()
+        memory_index = self.db.alloc_memory()
+        self.db.set_value(memory_index , 0)
         self.symbol_table.set_symbol_type(name , type)
         self.symbol_table.set_symbol_len(name , 1)
-        pass
-    def declare_arr():
-        #dont know how to find the len
-        pass
-    def print():
-        pass
+        self.symbol_table.set_symbol_loc(name,memory_index)
+     
+    def declare_arr(self):
+        #is the type and size ok?
+        size = self.stack.pop()
+        name = self.stack.pop()
+        type = self.stack.pop()
+        start_loc = None
+        for i in range(size-1):
+            loc = self.db.alloc_memory()
+            if start_loc ==None:
+                start_loc = self.db.alloc_memory()
+            self.db.set_value(loc,0)
+        self.symbol_table.set_symbol_type(name , type)
+        self.symbol_table.set_symbol_len(name , size)
+        self.symbol_table.set_symbol_loc(name,start_loc)
+        
+    def do_print(self):
+        #pops the variable and prints it
+        item = self.stack.pop()
+        self._emit(ThreeAddressCodeType.print, item, None, None)
     def push_ss(self, token): 
         self.stack.push(token[0])
         self.stack.push(token[1])
-        #push the type and name of the var
+        #push the type and name of current token
 
     def loc_while_cond_before(self):
         self.stack.push(self.pb.get_index())

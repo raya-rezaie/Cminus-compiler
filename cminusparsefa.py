@@ -1,5 +1,5 @@
 from parserfa import *
-from semantic_actions import *
+from code_gen import *
 def cminusParseFA(apply_fa, semantic_action):
     #TODO: build fa based on rules, firsts, and follows, return nonterminal "Program"
     # TERMINALS

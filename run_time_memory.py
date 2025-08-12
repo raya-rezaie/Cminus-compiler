@@ -21,6 +21,13 @@ class RunTimeMemory():
 
     def alloc_temp(self):
         return self.temp.alloc_memory()
+class data():
+    def __init__(self, lexeme, type, loc, is_func = False, attrs = {} ):
+        self.lexeme = lexeme
+        self.address = loc 
+        self.type = type
+        self.is_func = is_func
+        self.attrs = attrs   
 
 class programBlock():
     def __init__(self , base , bound):
@@ -77,30 +84,35 @@ class dataBlock():
     def set_value(self, index, value):
         array_idx = self._calc_array_idx(index)   #shouldnt the index be self.index?
         if 0 <= array_idx < len(self.block):
-            self.block[array_idx] = value
+           self.block[array_idx] = value
+
+    
+    
+        
+        
 
 
 class ThreeAddressCodeType(Enum):
-    add = "ADD",
-    mult = "MULT",
-    sub = "SUB",
-    eq = "EQ",
-    lt = "LT",
-    assign = "ASSIGN",
-    jpf = "JPF",    
-    jp = "JP",
-    print = "PRINT"
+        add = "ADD",
+        mult = "MULT",
+        sub = "SUB",
+        eq = "EQ",
+        lt = "LT",
+        assign = "ASSIGN",
+        jpf = "JPF",    
+        jp = "JP",
+        print = "PRINT"
 
 class ThreeAddressCode:
-    def __init__(self, rator, rand1 = None, rand2 = None, rand3 = None):
-        self.rator = rator
-        self.rands = [rand1, rand2, rand3]
-    
-    def to_string(self):
-        result = "("+self.rator.value
-        for rand in self.rands:
-            result += ","
-            if rand:
-                result += rand
-        result += ")"
-        return result
+        def __init__(self, rator, rand1 = None, rand2 = None, rand3 = None):
+            self.rator = rator
+            self.rands = [rand1, rand2, rand3]
+        
+        def to_string(self):
+            result = "("+self.rator.value
+            for rand in self.rands:
+                result += ","
+                if rand:
+                    result += rand
+            result += ")"
+            return result
