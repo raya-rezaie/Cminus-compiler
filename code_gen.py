@@ -148,7 +148,7 @@ class code_generator:
         self.stack.push(token[0])
         self.stack.push(token[1])
         #push the type and name of current token
-    def _binary_op_helper(self, op_enum):
+    def binary_op_helper(self, op_enum):
         right = self.stack.pop()
         left = self.stack.pop()
         t = self._new_temp()
@@ -221,4 +221,29 @@ class code_generator:
             t2 = self._new_temp()
             self._emit(ThreeAddressCodeType.add, base, t1, t2)
             self.stack.push(t2)
+    def save_jmp_out_scope(self):   #unconditional jump to feel later
+        jmp_idx = self.pb.add_instruction(ThreeAddressCode(ThreeAddressCodeType.jp, "", "", ""))
+        self.stack.push(jmp_idx)
+    def save_if_cond_jpf(self):
+        #jump out if condition false 
+        cond = self.stack.pop()   #conditon expression
+        jpf_index = self.pb.add_instruction(ThreeAddressCode(ThreeAddressCodeType.jpf, "0", "", ""))
+        self.stack.push(jpf_index)
+        self.stack.push(cond)
+    def fill_if_cond_jpf(self):
+        cond = self.stack.pop()
+        jpf_index = self.stack.pop()
+        after_idx = self.pb.get_index()    #current pb index to fill the jpf that was set to 0
+        jpf_instr = ThreeAddressCode(
+            ThreeAddressCodeType.jpf,
+            self._format_token(cond),
+            str(after_idx), None)
+        self.pb.add_instruction_at(jpf_instr, jpf_index)
+
+    def fill_if_cond_jpt(self):
+        #for skipping else if condition is true
+        jmp_idx = self.stack.pop()
+        after_idx = self.pb.get_index()
+        self._emit(ThreeAddressCodeType.jp, None, None, after_idx)
+
     
