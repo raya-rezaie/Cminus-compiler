@@ -101,12 +101,12 @@ class code_generator:
             raise NameError(f"Undefined identifier {token}")
         addr = entry[2]
         self.stack.push(("ID", token))  # push raw token called for IDs
-    def add_sub(self, action):
-        t = self.tb.get_temp()
-        self.pb.add_instruction([action , self.stack.top() , self.stack.pop(1) , t])
-        self.pb.index += 1
-        self.stack.pop(2).x
-        self.stack.push(t)
+    #def add_sub(self, action):
+    #    t = self.tb.get_temp()
+    #    self.pb.add_instruction([action , self.stack.top() , self.stack.pop(1) , t])
+    #    self.pb.index += 1
+    #    self.stack.pop(2).x
+    #    self.stack.push(t)
     def assign(self):
         self.pb.add_instruction(["ASSIGN" , self.stack.top() , self.stack.pop(1)])   #shouldnt it be 1 and 2?
         self.pb.index += 1
@@ -138,14 +138,30 @@ class code_generator:
         self.symbol_table.set_symbol_len(name , size)
         self.symbol_table.set_symbol_loc(name,start_loc)
         
-    def do_print(self):
+    def print(self):
         #pops the variable and prints it
         item = self.stack.pop()
         self._emit(ThreeAddressCodeType.print, item, None, None)
-    def push_ss(self, token): 
+    def push_ss(self, token):
+        #?
+        #self.stack.push(token) 
         self.stack.push(token[0])
         self.stack.push(token[1])
         #push the type and name of current token
+    def _binary_op_helper(self, op_enum):
+        right = self.stack.pop()
+        left = self.stack.pop()
+        t = self._new_temp()
+        self._emit(op_enum, left, right, t)
+        self.stack.push(t)
+
+    def add_or_sub(self):
+        self._binary_op_helper(ThreeAddressCodeType.add)
+
+    def mult(self):
+        self._binary_op_helper(ThreeAddressCodeType.mult)
+        
+
 
     def loc_while_cond_before(self):
         self.stack.push(self.pb.get_index())
@@ -174,4 +190,35 @@ class code_generator:
     def save_scope():
         #dont know where is the scope to save it
         pass
+    def relation(self):
+        op_item = self.stack.pop()
+        right = self.stack.pop()
+        left = self.stack.pop()
+        if isinstance(op_item, str):
+            op_sym = op_item
+        else:
+            op_sym = '<'
+        t = self._new_temp()
+        if op_sym == '<':
+            self._emit(ThreeAddressCodeType.lt, left, right, t)
+        elif op_sym == '==':
+            self._emit(ThreeAddressCodeType.eq, left, right, t)
+        else:
+            raise NotImplementedError(f"relation op not supported: {op_sym}")
+        self.stack.push(t)
+    def calc_arr_addr(self):
+        #calculating the address of an element inside an array given the base address of the array and index.
+        index = self.stack.pop()
+        base = self.stack.pop()
+        if index[0] == "NUM":    #index is constant
+            offset_bytes = index[1] * 4
+            t = self._new_temp()
+            self._emit(ThreeAddressCodeType.add, base, ("NUM", offset_bytes), t)    #addition instruction
+            self.stack.push(t)
+        else:
+            t1 = self._new_temp()
+            self._emit(ThreeAddressCodeType.mult, index, ("NUM", 4), t1)
+            t2 = self._new_temp()
+            self._emit(ThreeAddressCodeType.add, base, t1, t2)
+            self.stack.push(t2)
     
