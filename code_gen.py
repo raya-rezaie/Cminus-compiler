@@ -11,6 +11,7 @@ class code_generator:
         self.stack = semantic_stack
         self.symbol_table = symbol_table
         self.scope = 0
+        self.breaks = {}
         self.token = ""
 
     def exec_func(self, type, token):
@@ -88,7 +89,7 @@ class code_generator:
     def save_jmp_out_scope(self):  # unconditional jump to fill later
         jmp_idx = self.pb.add_instruction_and_increase(
             ThreeAddressCode(ThreeAddressCodeType.jp, "", "", ""))
-        self.stack.push(jmp_idx)
+        self.breaks[self.scope].append(jmp_idx)
 
     def save_if_cond_jpf(self):
         # jump out if condition false
@@ -127,11 +128,8 @@ class code_generator:
         # save scope here: only valid break is in while
         self._enter_scope()
 
-    # assumes stack = pc after while cond | result of cond | pc before while cond
+    # assumes stack = pc after while cond | result of cond | pc before while cond | ...
     def fill_while(self):
-        # first fill breaks to current pc (no valid breaks except in while => #fill_break moved here and combined with #fill_while)
-        
-        
         uncond_jmp_idx = self.pb.get_index()
         # add conditional jump after checking while condition
         cond_jmp = ThreeAddressCode(
@@ -149,6 +147,13 @@ class code_generator:
 
         self.stack.pop(3)
 
+        # fill breaks to current pc (no valid breaks except in while => #fill_break moved here and combined with #fill_while)
+        break_ins = ThreeAddressCode(
+            ThreeAddressCodeType.jp, self.pb.get_index())
+        for b in self.breaks[self.scope]:
+            self.pb.add_instruction_at(break_ins, b)
+        self._exit_scope()
+
     def return_jp(self):
         pass
 
@@ -159,7 +164,7 @@ class code_generator:
         # pops the variable and prints it
         if self.stack.top(1) == 'PRINT':
             item = self.stack.pop()
-            self.stack.pop() # pop 'PRINT'
+            self.stack.pop()  # pop 'PRINT'
             instr = ThreeAddressCode(ThreeAddressCodeType.print, item)
             self.pb.add_instruction_and_increase(instr)
 
@@ -222,9 +227,11 @@ class code_generator:
 
     def _enter_scope(self):
         self.scope += 1
+        self.breaks[self.scope] = []
         return self.scope
 
     def _exit_scope(self):
+        del self.breaks[self.scope]
         self.scope -= 1
         return self.scope
 
