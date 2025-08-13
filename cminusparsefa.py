@@ -141,7 +141,7 @@ def cminusParseFA(apply_fa, semantic_action):
     create_fa([[fun_declaration_prime], [var_declaration_prime]], declaration_prime, semantic_action)
 
     # 6. VAR DECLARATION PRIME
-    create_fa([[SEMICOLON , actionNames.dclr_var], [OPENBRACKET,actionNames.push_ss, NUM, CLOSEBRACKET, SEMICOLON , actionNames.dclr_var]], var_declaration_prime, semantic_action)
+    create_fa([[SEMICOLON , actionNames.dclr_var], [OPENBRACKET,actionNames.push_ss, NUM, CLOSEBRACKET, SEMICOLON , actionNames.dclr_arr]], var_declaration_prime, semantic_action)
 
     # 7. FUN DECLARATION PRIME
     create_fa([[OPENPAR, params, CLOSEPAR,actionNames.update_func_params, compound_stmt , actionNames.end_func]], fun_declaration_prime, semantic_action)

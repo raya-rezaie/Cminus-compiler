@@ -61,31 +61,31 @@ class code_generator:
                 self.loc_while_cond_before()
             case actionNames.save_while_cond_jpf:
                 self.save_while_cond_jpf()
-    def format_token(self, token):
+    #def format_token(self, token):
         # Convert (TOKEN_TYPE, TOKEN_VALUE) or int address to  three address codes
-        if token is None:
-            return None
-        if not isinstance(token, tuple) or len(token) != 2:
-            return str(token)
+    #    if token is None:
+    #        return None
+    #    if not isinstance(token, tuple) or len(token) != 2:
+    #        return str(token)
 
-        ttype, tval = token
-        if ttype == "NUM":
-            return f"#{tval}"
-        elif ttype == "ID":
-            addr = self.symbol_table.find_addr(tval)
-            if addr is None:
-                raise NameError(f"Variable '{tval}' not declared")
-            return str(addr)
-        elif ttype in ("SYMBOL", "KEYWORD"):
-            return str(tval)
-        else:
-            raise ValueError(f"Unknown token type {ttype}")
-    def new_temp(self):
-        #getting new temp
-        temp_addr = self.tb.alloc_memory()
-        if temp_addr == -1:
-            raise MemoryError("No temp space")
-        return temp_addr
+    #    ttype, tval = token
+    #    if ttype == "NUM":
+    #        return f"#{tval}"
+    #     elif ttype == "ID":
+    #         addr = self.symbol_table.find_addr(tval)
+    #         if addr is None:
+    #             raise NameError(f"Variable '{tval}' not declared")
+    #         return str(addr)
+    #     elif ttype in ("SYMBOL", "KEYWORD"):
+    #         return str(tval)
+    #     else:
+    #         raise ValueError(f"Unknown token type {ttype}")
+    # def new_temp(self):
+    #     #getting new temp
+    #     temp_addr = self.tb.alloc_memory()
+    #     if temp_addr == -1:
+    #         raise MemoryError("No temp space")
+    #     return temp_addr
     def emit(self, op_enum, o1=None, o2=None, r=None):
         instr = ThreeAddressCode(
             op_enum,
@@ -93,14 +93,18 @@ class code_generator:
             self.format_token(o2),
             self.format_token(r)
         )
-        return self.pb.add_instruction(instr)
+        return instr
 
     def pid(self, token):
-        entry = self.symbol_table.get_symbol_full(token)
+        if token[1] == 'output':
+            self.stack.push('PRINT')
+        entry = self.symbol_table.get_symbol_full(token[1])
+
         if entry is None:
             raise NameError(f"Undefined identifier {token}")
         addr = entry[2]
-        self.stack.push(("ID", token))  # push raw token called for IDs
+        self.stack.push(addr)  # push raw token called for IDs
+        
     #def add_sub(self, action):
     #    t = self.tb.get_temp()
     #    self.pb.add_instruction([action , self.stack.top() , self.stack.pop(1) , t])
@@ -108,11 +112,14 @@ class code_generator:
     #    self.stack.pop(2).x
     #    self.stack.push(t)
     def assign(self):
-        self.pb.add_instruction(["ASSIGN" , self.stack.top() , self.stack.pop(1)])   #shouldnt it be 1 and 2?
-        self.pb.index += 1
-        self.stack.pop(2)
+        instr = ThreeAddressCode(ThreeAddressCodeType.assign,str(self.stack.pop()), str(self.stack.top()) )
+        self.pb.add_instruction_and_increase(instr)
+        
     def push_ss(self, token):
-        self.stack.push(token)
+        self.stack.push(token[1])
+    def push_num_ss(self, token):
+        self.stack.push('#' + token[1])
+        
     def declare_var(self , token):
         #the data is supposed to be saved in db as names of the token or complete token
         name = self.stack.pop()
@@ -140,26 +147,24 @@ class code_generator:
         
     def print(self):
         #pops the variable and prints it
-        item = self.stack.pop()
-        self.emit(ThreeAddressCodeType.print, item, None, None)
-    def push_ss(self, token):
-        #?
-        #self.stack.push(token) 
-        self.stack.push(token[0])
-        self.stack.push(token[1])
+        if self.stack.top(1) == 'PRINT': 
+            item = self.stack.pop()
+            instr = ThreeAddressCode(ThreeAddressCodeType.print, item)
+            self.pb.add_instruction_and_increase(instr)
         #push the type and name of current token
     def binary_op_helper(self, op_enum):
         right = self.stack.pop()
         left = self.stack.pop()
-        t = self._new_temp()
-        self.emit(op_enum, left, right, t)
+        t = self.new_temp()
+        instr = ThreeAddressCode(op_enum, left, right,t)
+        self.pb.add_instruction_and_increase(instr)
         self.stack.push(t)
 
     def add_or_sub(self):
-        self._binary_op_helper(ThreeAddressCodeType.add)
+        self.binary_op_helper(ThreeAddressCodeType.add)
 
     def mult(self):
-        self._binary_op_helper(ThreeAddressCodeType.mult)
+        self.binary_op_helper(ThreeAddressCodeType.mult)
         
     def loc_while_cond_before(self):
         self.stack.push(self.pb.get_index())
@@ -181,26 +186,23 @@ class code_generator:
         
         # add unconditional jump to before while condition, after while instructions
         uncond_jmp = ThreeAddressCode(ThreeAddressCodeType.jp, self.stack.top(2))
-        self.pb.add_instruction_at(uncond_jmp, uncond_jmp_idx)
+        self.pb.add_instruction_and_increase(uncond_jmp)
         
-        self.pd.set_index(uncond_jmp_idx +  1)
         self.stack.pop(3)
     def save_scope():
         #dont know where is the scope to save it
         pass
     def relation(self):
-        op_item = self.stack.pop()
         right = self.stack.pop()
+        op_sym = self.stack.pop()
         left = self.stack.pop()
-        if isinstance(op_item, str):
-            op_sym = op_item
-        else:
-            op_sym = '<'
-        t = self._new_temp()
+        t = self.new_temp()
         if op_sym == '<':
-            self.emit(ThreeAddressCodeType.lt, left, right, t)
+            instr = (ThreeAddressCodeType.lt, left, right, t)
+            self.pb.add_instruction_and_increase(instr)
         elif op_sym == '==':
-            self.emit(ThreeAddressCodeType.eq, left, right, t)
+            instr = ThreeAddressCode(ThreeAddressCodeType.eq, left, right, t)
+            self.pb.add_instruction_and_increase(instr)
         else:
             raise NotImplementedError(f"relation op not supported: {op_sym}")
         self.stack.push(t)
@@ -208,40 +210,46 @@ class code_generator:
         #calculating the address of an element inside an array given the base address of the array and index.
         index = self.stack.pop()
         base = self.stack.pop()
-        if index[0] == "NUM":    #index is constant
-            offset_bytes = index[1] * 4
-            t = self._new_temp()
-            self.emit(ThreeAddressCodeType.add, base, ("NUM", offset_bytes), t)    #addition instruction
+        if str(index).startswith("#"):    #index is constant
+            offset_bytes = int(str(index).lstrip("#")) * 4
+            t = self.new_temp()
+            instr = ThreeAddressCode(ThreeAddressCodeType.add, base, offset_bytes, t)
+            self.pb.add_instruction_and_increase(instr)
             self.stack.push(t)
         else:
-            t1 = self._new_temp()
-            self.emit(ThreeAddressCodeType.mult, index, ("NUM", 4), t1)
-            t2 = self._new_temp()
-            self.emit(ThreeAddressCodeType.add, base, t1, t2)
+            t1 = self.new_temp()
+            instr = ThreeAddressCode(ThreeAddressCodeType.mult, index, "#4", t1)
+            self.pb.add_instruction_and_increase(instr)
+            t2 = self.new_temp()
+            instr = ThreeAddressCode(ThreeAddressCodeType.add, base, t1, t2)
+            self.pb.add_instruction_and_increase(instr)
+
             self.stack.push(t2)
-    def save_jmp_out_scope(self):   #unconditional jump to feel later
-        jmp_idx = self.pb.add_instruction(ThreeAddressCode(ThreeAddressCodeType.jp, "", "", ""))
+    def save_jmp_out_scope(self):   #unconditional jump to fill later
+        jmp_idx = self.pb.add_instruction_and_increase(ThreeAddressCode(ThreeAddressCodeType.jp, "", "", ""))
         self.stack.push(jmp_idx)
     def save_if_cond_jpf(self):
         #jump out if condition false 
-        cond = self.stack.pop()   #conditon expression
-        jpf_index = self.pb.add_instruction(ThreeAddressCode(ThreeAddressCodeType.jpf, "0", "", ""))
+        jpf_index = self.pb.add_instruction_and_increase(ThreeAddressCode(ThreeAddressCodeType.jpf, "0", "", ""))
         self.stack.push(jpf_index)
-        self.stack.push(cond)
     def fill_if_cond_jpf(self):
-        cond = self.stack.pop()
         jpf_index = self.stack.pop()
+        cond = self.stack.pop()
         after_idx = self.pb.get_index()    #current pb index to fill the jpf that was set to 0
         jpf_instr = ThreeAddressCode(
             ThreeAddressCodeType.jpf,
-            self.format_token(cond),
-            str(after_idx), None)
+            cond,
+            str(after_idx +1), None)
         self.pb.add_instruction_at(jpf_instr, jpf_index)
+        self.stack.push(after_idx)
+        self.pb.set_index(after_idx+1)
+                
 
     def fill_if_cond_jpt(self):
         #for skipping else if condition is true
         jmp_idx = self.stack.pop()
         after_idx = self.pb.get_index()
-        self.emit(ThreeAddressCodeType.jp, None, None, after_idx)
+        instr = ThreeAddressCode(ThreeAddressCodeType.jp,after_idx)
+        self.pb.add_instruction_at(instr, jmp_idx)
 
     

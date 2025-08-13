@@ -35,6 +35,11 @@ class programBlock():
         self.bound = bound
         self.index = base
         self.block = {}
+    def add_instruction_and_increase(self, instruction):
+        idx = self.index
+        self.block[idx] = instruction
+        self.index += 1
+        return idx
     def add_instruction_at(self, instruction, index):
         if self.base <= index <= self.bound:
             self.block[index] = instruction
