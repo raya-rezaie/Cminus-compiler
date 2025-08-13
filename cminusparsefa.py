@@ -173,8 +173,7 @@ def cminusParseFA(apply_fa, semantic_action):
               None, actionNames.save_param_norm]], param_prime, semantic_action)
 
     # 13. COMPOUND STMT
-    create_fa([[OPENCURLY, actionNames.save_scope,  declaration_list, statement_list,
-              actionNames.fill_break, CLOSECURLY]], compound_stmt, semantic_action)
+    create_fa([[OPENCURLY,  declaration_list, statement_list, CLOSECURLY]], compound_stmt, semantic_action)
 
     # 14. STATEMENT LIST
     create_fa([[statement, statement_list], [None]],

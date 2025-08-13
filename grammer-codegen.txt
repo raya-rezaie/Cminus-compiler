@@ -17,7 +17,7 @@ ParamList -> EPSILON
 Param -> DeclarationInitial ParamPrime
 ParamPrime -> [ ] #save_param_list
 ParamPrime -> EPSILON #save_param_norm
-CompoundStmt -> { #save_scope DeclarationList StatementList #fill_break }                               ; save scope in case of breaks and fill jmp location for breaks after reaching end of scope
+CompoundStmt -> { DeclarationList StatementList }                               ; save scope in case of breaks and fill jmp location for breaks after reaching end of scope
 StatementList -> Statement StatementList
 StatementList -> EPSILON
 Statement -> ExpressionStmt

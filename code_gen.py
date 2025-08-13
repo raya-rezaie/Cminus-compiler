@@ -10,6 +10,7 @@ class code_generator:
         self.db = runtime_memory.get_db()
         self.stack = semantic_stack
         self.symbol_table = symbol_table
+        self.scope = 0
         self.token = ""
 
     def exec_func(self, type, token):
@@ -31,8 +32,15 @@ class code_generator:
         self.stack.push(addr)
 
     def add_or_sub(self):
-        # TODO: must do add or sub depending on stack
-        self.binary_op_helper(ThreeAddressCodeType.add)
+        rand2 = self.stack.pop()
+        rator = ThreeAddressCodeType.add if self.stack.pop(
+        ) == '+' else ThreeAddressCodeType.sub
+        rand1 = self.stack.pop()
+
+        temp = self.tb.alloc_memory()
+        self.stack.push(temp)
+        instruction = ThreeAddressCode(rator, rand1, rand2, temp)
+        self.pb.add_instruction(instruction)
 
     def push_ss(self):
         self.stack.push(self.token[1])
@@ -48,7 +56,7 @@ class code_generator:
         self.symbol_table.set_symbol_loc(name, memory_index)
 
     def declare_arr(self):
-        # is the type and size ok?
+        # is the type and size ok? (fekr konam are)
         size = int(self.stack.pop())
         name = self.stack.pop()
         type = SymbolType(self.stack.pop())
@@ -72,10 +80,6 @@ class code_generator:
         pass
 
     def save_param_norm(self):
-        pass
-
-    def save_scope():
-        # dont know where is the scope to save it
         pass
 
     def fill_break(self):
@@ -120,8 +124,14 @@ class code_generator:
         self.stack.push(index)
         self.pb.set_index(index + 1)
 
+        # save scope here: only valid break is in while
+        self._enter_scope()
+
     # assumes stack = pc after while cond | result of cond | pc before while cond
     def fill_while(self):
+        # first fill breaks to current pc (no valid breaks except in while => #fill_break moved here and combined with #fill_while)
+        
+        
         uncond_jmp_idx = self.pb.get_index()
         # add conditional jump after checking while condition
         cond_jmp = ThreeAddressCode(
@@ -139,7 +149,7 @@ class code_generator:
 
         self.stack.pop(3)
 
-    def return_jmp(self):
+    def return_jp(self):
         pass
 
     def save_return_value(self):
@@ -149,9 +159,9 @@ class code_generator:
         # pops the variable and prints it
         if self.stack.top(1) == 'PRINT':
             item = self.stack.pop()
+            self.stack.pop() # pop 'PRINT'
             instr = ThreeAddressCode(ThreeAddressCodeType.print, item)
             self.pb.add_instruction_and_increase(instr)
-        # push the type and name of current token
 
     def assign(self):
         instr = ThreeAddressCode(ThreeAddressCodeType.assign, str(
@@ -175,7 +185,8 @@ class code_generator:
                 ThreeAddressCodeType.mult, index, f"#{BLOCKSIZE}", t1)
             self.pb.add_instruction_and_increase(instr)
             t2 = self.new_temp()
-            instr = ThreeAddressCode(ThreeAddressCodeType.add, base, t1, t2)
+            instr = ThreeAddressCode(
+                ThreeAddressCodeType.add, base, t1, t2)
             self.pb.add_instruction_and_increase(instr)
 
             self.stack.push(t2)
@@ -189,10 +200,12 @@ class code_generator:
             instr = (ThreeAddressCodeType.lt, left, right, t)
             self.pb.add_instruction_and_increase(instr)
         elif op_sym == '==':
-            instr = ThreeAddressCode(ThreeAddressCodeType.eq, left, right, t)
+            instr = ThreeAddressCode(
+                ThreeAddressCodeType.eq, left, right, t)
             self.pb.add_instruction_and_increase(instr)
         else:
-            raise NotImplementedError(f"relation op not supported: {op_sym}")
+            raise NotImplementedError(
+                f"relation op not supported: {op_sym}")
         self.stack.push(t)
 
     def push_num_ss(self):
@@ -207,13 +220,21 @@ class code_generator:
     def mult(self):
         self.binary_op_helper(ThreeAddressCodeType.mult)
 
-    def binary_op_helper(self, op_enum):
-        right = self.stack.pop()
-        left = self.stack.pop()
-        t = self.new_temp()
-        instr = ThreeAddressCode(op_enum, left, right, t)
-        self.pb.add_instruction_and_increase(instr)
-        self.stack.push(t)
+    def _enter_scope(self):
+        self.scope += 1
+        return self.scope
+
+    def _exit_scope(self):
+        self.scope -= 1
+        return self.scope
+
+    # def binary_op_helper(self, op_enum):
+    #     right = self.stack.pop()
+    #     left = self.stack.pop()
+    #     t = self.new_temp()
+    #     instr = ThreeAddressCode(op_enum, left, right, t)
+    #     self.pb.add_instruction_and_increase(instr)
+    #     self.stack.push(t)
 
     # def format_token(self, token):
         # Convert (TOKEN_TYPE, TOKEN_VALUE) or int address to  three address codes
@@ -260,7 +281,6 @@ class actionNames(Enum):
     end_func = code_generator.end_func
     save_param_list = code_generator.save_param_list
     save_param_norm = code_generator.save_param_norm
-    save_scope = code_generator.save_scope
     fill_break = code_generator.fill_break
     save_jmp_out_scope = code_generator.save_jmp_out_scope
     save_if_cond_jpf = code_generator.save_if_cond_jpf
