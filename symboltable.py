@@ -2,10 +2,10 @@ from enum import Enum
 
 
 class SymbolType(Enum):
-    TBD = "",
-    INT = "int",
-    VOID = "void",
-    INT_FUNC = "int func",
+    TBD = ""
+    INT = "int"
+    VOID = "void"
+    INT_FUNC = "int func"
     VOID_FUNC = "void func"
 
 

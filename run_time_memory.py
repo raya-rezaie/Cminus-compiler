@@ -102,14 +102,14 @@ class dataBlock():
 
 
 class ThreeAddressCodeType(Enum):
-    add = "ADD",
-    mult = "MULT",
-    sub = "SUB",
-    eq = "EQ",
-    lt = "LT",
-    assign = "ASSIGN",
-    jpf = "JPF",
-    jp = "JP",
+    add = "ADD"
+    mult = "MULT"
+    sub = "SUB"
+    eq = "EQ"
+    lt = "LT"
+    assign = "ASSIGN"
+    jpf = "JPF"
+    jp = "JP"
     print = "PRINT"
 
 
