@@ -61,8 +61,8 @@ class code_generator:
                 self.loc_while_cond_before()
             case actionNames.save_while_cond_jpf:
                 self.save_while_cond_jpf()
-    def _format_token(self, token):
-        # Convert (TOKEN_TYPE, TOKEN_VALUE) or int address to TAC string
+    def format_token(self, token):
+        # Convert (TOKEN_TYPE, TOKEN_VALUE) or int address to  three address codes
         if token is None:
             return None
         if not isinstance(token, tuple) or len(token) != 2:
@@ -86,12 +86,12 @@ class code_generator:
         if temp_addr == -1:
             raise MemoryError("No temp space")
         return temp_addr
-    def _emit(self, op_enum, o1=None, o2=None, r=None):
+    def emit(self, op_enum, o1=None, o2=None, r=None):
         instr = ThreeAddressCode(
             op_enum,
-            self._format_token(o1),
-            self._format_token(o2),
-            self._format_token(r)
+            self.format_token(o1),
+            self.format_token(o2),
+            self.format_token(r)
         )
         return self.pb.add_instruction(instr)
 
@@ -141,7 +141,7 @@ class code_generator:
     def print(self):
         #pops the variable and prints it
         item = self.stack.pop()
-        self._emit(ThreeAddressCodeType.print, item, None, None)
+        self.emit(ThreeAddressCodeType.print, item, None, None)
     def push_ss(self, token):
         #?
         #self.stack.push(token) 
@@ -152,7 +152,7 @@ class code_generator:
         right = self.stack.pop()
         left = self.stack.pop()
         t = self._new_temp()
-        self._emit(op_enum, left, right, t)
+        self.emit(op_enum, left, right, t)
         self.stack.push(t)
 
     def add_or_sub(self):
@@ -161,8 +161,6 @@ class code_generator:
     def mult(self):
         self._binary_op_helper(ThreeAddressCodeType.mult)
         
-
-
     def loc_while_cond_before(self):
         self.stack.push(self.pb.get_index())
 
@@ -200,9 +198,9 @@ class code_generator:
             op_sym = '<'
         t = self._new_temp()
         if op_sym == '<':
-            self._emit(ThreeAddressCodeType.lt, left, right, t)
+            self.emit(ThreeAddressCodeType.lt, left, right, t)
         elif op_sym == '==':
-            self._emit(ThreeAddressCodeType.eq, left, right, t)
+            self.emit(ThreeAddressCodeType.eq, left, right, t)
         else:
             raise NotImplementedError(f"relation op not supported: {op_sym}")
         self.stack.push(t)
@@ -213,13 +211,13 @@ class code_generator:
         if index[0] == "NUM":    #index is constant
             offset_bytes = index[1] * 4
             t = self._new_temp()
-            self._emit(ThreeAddressCodeType.add, base, ("NUM", offset_bytes), t)    #addition instruction
+            self.emit(ThreeAddressCodeType.add, base, ("NUM", offset_bytes), t)    #addition instruction
             self.stack.push(t)
         else:
             t1 = self._new_temp()
-            self._emit(ThreeAddressCodeType.mult, index, ("NUM", 4), t1)
+            self.emit(ThreeAddressCodeType.mult, index, ("NUM", 4), t1)
             t2 = self._new_temp()
-            self._emit(ThreeAddressCodeType.add, base, t1, t2)
+            self.emit(ThreeAddressCodeType.add, base, t1, t2)
             self.stack.push(t2)
     def save_jmp_out_scope(self):   #unconditional jump to feel later
         jmp_idx = self.pb.add_instruction(ThreeAddressCode(ThreeAddressCodeType.jp, "", "", ""))
@@ -236,7 +234,7 @@ class code_generator:
         after_idx = self.pb.get_index()    #current pb index to fill the jpf that was set to 0
         jpf_instr = ThreeAddressCode(
             ThreeAddressCodeType.jpf,
-            self._format_token(cond),
+            self.format_token(cond),
             str(after_idx), None)
         self.pb.add_instruction_at(jpf_instr, jpf_index)
 
@@ -244,6 +242,6 @@ class code_generator:
         #for skipping else if condition is true
         jmp_idx = self.stack.pop()
         after_idx = self.pb.get_index()
-        self._emit(ThreeAddressCodeType.jp, None, None, after_idx)
+        self.emit(ThreeAddressCodeType.jp, None, None, after_idx)
 
     
