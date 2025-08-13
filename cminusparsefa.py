@@ -139,7 +139,7 @@ def cminusParseFA(apply_fa, semantic_action):
               declaration, semantic_action)
 
     # 4. DECLARATION INITIAL
-    create_fa([[actionNames.push_ss, type_specifier, ID]],
+    create_fa([[ActionNames.PUSH_SS, type_specifier, ActionNames.PUSH_SS, ID]],
               declaration_initial, semantic_action)
 
     # 5. DECLARATION PRIME
@@ -147,33 +147,34 @@ def cminusParseFA(apply_fa, semantic_action):
               declaration_prime, semantic_action)
 
     # 6. VAR DECLARATION PRIME
-    create_fa([[SEMICOLON, actionNames.dclr_var], [OPENBRACKET, actionNames.push_ss, NUM,
-              CLOSEBRACKET, SEMICOLON, actionNames.dclr_arr]], var_declaration_prime, semantic_action)
+    create_fa([[SEMICOLON, ActionNames.DCLR_VAR], [OPENBRACKET, ActionNames.PUSH_SS, NUM,
+              CLOSEBRACKET, SEMICOLON, ActionNames.DCLR_ARR]], var_declaration_prime, semantic_action)
 
     # 7. FUN DECLARATION PRIME
-    create_fa([[OPENPAR, params, CLOSEPAR, actionNames.update_func_params,
-              compound_stmt, actionNames.end_func]], fun_declaration_prime, semantic_action)
+    create_fa([[OPENPAR, params, CLOSEPAR, ActionNames.UPDATE_FUNC_PARAMS,
+              compound_stmt, ActionNames.END_FUNC]], fun_declaration_prime, semantic_action)
 
     # 8. TYPE SPECIFIER
     create_fa([[INT], [VOID]], type_specifier, semantic_action)
 
     # 9. PARAMS
-    create_fa([[actionNames.push_ss, INT, actionNames.push_ss, ID,
+    create_fa([[ActionNames.PUSH_SS, INT, ActionNames.PUSH_SS, ID,
               param_prime, param_list], [VOID]], params, semantic_action)
 
     # 10. PARAM LIST
     create_fa([[COMMA, param, param_list], [None]],
               param_list, semantic_action)
-
+    
     # 11. PARAM
     create_fa([[declaration_initial, param_prime]], param, semantic_action)
 
     # 12. PARAM PRIME
-    create_fa([[OPENBRACKET, CLOSEBRACKET, actionNames.save_param_list], [
-              None, actionNames.save_param_norm]], param_prime, semantic_action)
+    create_fa([[OPENBRACKET, CLOSEBRACKET, ActionNames.SAVE_PARAM_LIST], [
+              None, ActionNames.SAVE_PARAM_NORM]], param_prime, semantic_action)
 
     # 13. COMPOUND STMT
-    create_fa([[OPENCURLY,  declaration_list, statement_list, CLOSECURLY]], compound_stmt, semantic_action)
+    create_fa([[OPENCURLY,  declaration_list, statement_list,
+              CLOSECURLY]], compound_stmt, semantic_action)
 
     # 14. STATEMENT LIST
     create_fa([[statement, statement_list], [None]],
@@ -184,34 +185,34 @@ def cminusParseFA(apply_fa, semantic_action):
               iteration_stmt], [return_stmt]], statement, semantic_action)
 
     # 16. EXPRESSION STMT
-    create_fa([[expression, SEMICOLON], [BREAK, SEMICOLON, actionNames.save_jmp_out_scope], [
+    create_fa([[expression, SEMICOLON], [BREAK, SEMICOLON, ActionNames.SAVE_JMP_OUT_SCOPE], [
               SEMICOLON]], expression_stmt, semantic_action)
 
     # 17. SELECTION STMT
-    create_fa([[IF, OPENPAR, expression, CLOSEPAR, actionNames.save_while_cond_jpf,
-              statement, ELSE, statement]], selection_stmt, semantic_action)
+    create_fa([[IF, OPENPAR, expression, CLOSEPAR, ActionNames.SAVE_IF_COND_JPF,
+              statement, ELSE, ActionNames.FILL_IF_COND_JPF, statement, ActionNames.FILL_IF_COND_JPT]], selection_stmt, semantic_action)
 
     # 18. ITERATION STMT
-    create_fa([[WHILE, OPENPAR, expression, CLOSEPAR, statement]],
+    create_fa([[WHILE, ActionNames.LOC_WHILE_COND_BEFORE, OPENPAR, expression, CLOSEPAR, ActionNames.SAVE_WHILE_COND_JPF, statement, ActionNames.FILL_WHILE]],
               iteration_stmt, semantic_action)
 
     # 19. RETURN STMT
     create_fa([[RETURN, return_stmt_prime]], return_stmt, semantic_action)
 
     # 20. RETURN STMT PRIME
-    create_fa([[actionNames.return_jp, SEMICOLON], [
-              expression, actionNames.save_return_value, SEMICOLON]], return_stmt_prime, semantic_action)
+    create_fa([[ActionNames.RETURN_JP, SEMICOLON], [
+              expression, ActionNames.SAVE_RETURN_VALUE, SEMICOLON]], return_stmt_prime, semantic_action)
 
     # 21. EXPRESSION
-    create_fa([[simple_expression_zegond], [actionNames.pid, ID,
-              b, actionNames.print]], expression, semantic_action)
+    create_fa([[simple_expression_zegond], [ActionNames.PID, ID,
+              b, ActionNames.PRINT]], expression, semantic_action)
 
     # 22. B
-    create_fa([[EQUAL, expression, actionNames.assign], [OPENBRACKET, expression, CLOSEBRACKET,
-              actionNames.calc_arr_addr, h], [simple_expression_prime]], b, semantic_action)
+    create_fa([[EQUAL, expression, ActionNames.ASSIGN], [OPENBRACKET, expression, CLOSEBRACKET,
+              ActionNames.CALC_ARR_ADDR, h], [simple_expression_prime]], b, semantic_action)
 
     # 23. H
-    create_fa([[EQUAL, expression, actionNames.assign],
+    create_fa([[EQUAL, expression, ActionNames.ASSIGN],
               [g, d, c]], h, semantic_action)
 
     # 24. SIMPLE EXPRESSION ZEGOND
@@ -223,12 +224,12 @@ def cminusParseFA(apply_fa, semantic_action):
               simple_expression_prime, semantic_action)
 
     # 26. C
-    create_fa([[relop, additive_expression, actionNames.relation],
+    create_fa([[relop, additive_expression, ActionNames.RELATION],
               [None]], c, semantic_action)
 
     # 27. RELOP
-    create_fa([[actionNames.push_ss, LESS], [
-              actionNames.push_ss, DOUBLEEQUAL]], relop, semantic_action)
+    create_fa([[ActionNames.PUSH_SS, LESS], [
+              ActionNames.PUSH_SS, DOUBLEEQUAL]], relop, semantic_action)
 
     # 28. ADDITIVE EXPRESSION
     create_fa([[term, d]], additive_expression, semantic_action)
@@ -240,12 +241,12 @@ def cminusParseFA(apply_fa, semantic_action):
     create_fa([[term_zegond, d]], additive_expression_zegond, semantic_action)
 
     # 31. D
-    create_fa([[addop, term, actionNames.add_or_sub, d], [None]],
+    create_fa([[addop, term, ActionNames.ADD_OR_SUB, d], [None]],
               d, semantic_action)
 
     # 32. ADDOP
-    create_fa([[actionNames.push_ss, PLUS], [
-              actionNames.push_ss, MINUS]], addop, semantic_action)
+    create_fa([[ActionNames.PUSH_SS, PLUS], [
+              ActionNames.PUSH_SS, MINUS]], addop, semantic_action)
 
     # 33. TERM
     create_fa([[signed_factor, g]], term, semantic_action)
@@ -257,7 +258,7 @@ def cminusParseFA(apply_fa, semantic_action):
     create_fa([[signed_factor_zegond, g]], term_zegond, semantic_action)
 
     # 36. G
-    create_fa([[MULT, signed_factor, actionNames.mult, g], [None]],
+    create_fa([[MULT, signed_factor, ActionNames.MULT, g], [None]],
               g, semantic_action)
 
     # 37. SIGNED FACTOR
@@ -272,24 +273,24 @@ def cminusParseFA(apply_fa, semantic_action):
               signed_factor_zegond, semantic_action)
 
     # 40. FACTOR
-    create_fa([[OPENPAR, expression, CLOSEPAR], [actionNames.pid, ID, var_call_prime], [
-              actionNames.push_num_ss, NUM]], factor, semantic_action)
+    create_fa([[OPENPAR, expression, CLOSEPAR], [ActionNames.PID, ID, var_call_prime], [
+              ActionNames.PUSH_NUM_SS, NUM]], factor, semantic_action)
 
     # 41. VAR CALL PRIME
-    create_fa([[actionNames.start_args, OPENPAR, args, CLOSEPAR, actionNames.check_args], [
+    create_fa([[ActionNames.START_ARGS, OPENPAR, args, CLOSEPAR, ActionNames.CHECK_ARGS], [
               var_prime]], var_call_prime, semantic_action)
 
     # 42. VAR PRIME
-    create_fa([[OPENBRACKET, expression, CLOSEBRACKET, actionNames.calc_arr_addr], [
+    create_fa([[OPENBRACKET, expression, CLOSEBRACKET, ActionNames.CALC_ARR_ADDR], [
               None]], var_prime, semantic_action)
 
     # 43. FACTOR PRIME
-    create_fa([[actionNames.start_args, OPENPAR, args, CLOSEPAR,
-              actionNames.check_args], [None]], factor_prime, semantic_action)
+    create_fa([[ActionNames.START_ARGS, OPENPAR, args, CLOSEPAR,
+              ActionNames.CHECK_ARGS], [None]], factor_prime, semantic_action)
 
     # 44. FACTOR ZEGOND
     create_fa([[OPENPAR, expression, CLOSEPAR], [
-              actionNames.push_num_ss, NUM]], factor_zegond, semantic_action)
+              ActionNames.PUSH_NUM_SS, NUM]], factor_zegond, semantic_action)
 
     # 45. ARGS
     create_fa([[arg_list], [None]], args, semantic_action)

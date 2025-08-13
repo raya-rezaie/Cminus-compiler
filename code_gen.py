@@ -3,7 +3,7 @@ from symboltable import *
 from enum import Enum
 
 
-class code_generator:
+class CodeGenerator:
     def __init__(self, runtime_memory, semantic_stack, symbol_table):
         self.pb = runtime_memory.get_pb()
         self.tb = runtime_memory.get_temp()
@@ -16,7 +16,7 @@ class code_generator:
 
     def exec_func(self, type, token):
         self.token = token
-        type.value(self, token)
+        type(self)
 
     def pid(self):
         if self.token[1] == 'output':
@@ -81,9 +81,6 @@ class code_generator:
         pass
 
     def save_param_norm(self):
-        pass
-
-    def fill_break(self):
         pass
 
     def save_jmp_out_scope(self):  # unconditional jump to fill later
@@ -278,31 +275,30 @@ class code_generator:
     #     return instr
 
 
-class actionNames(Enum):
-    pid = code_generator.pid
-    add_or_sub = code_generator.add_or_sub
-    push_ss = code_generator.push_ss
-    dclr_var = code_generator.declare_var
-    dclr_arr = code_generator.declare_arr
-    update_func_params = code_generator.update_func_params
-    end_func = code_generator.end_func
-    save_param_list = code_generator.save_param_list
-    save_param_norm = code_generator.save_param_norm
-    fill_break = code_generator.fill_break
-    save_jmp_out_scope = code_generator.save_jmp_out_scope
-    save_if_cond_jpf = code_generator.save_if_cond_jpf
-    fill_if_cond_jpf = code_generator.fill_if_cond_jpf
-    fill_if_cond_jpt = code_generator.fill_if_cond_jpt
-    loc_while_cond_before = code_generator.loc_while_cond_before
-    save_while_cond_jpf = code_generator.save_while_cond_jpf
-    fill_while = code_generator.fill_while
-    return_jp = code_generator.return_jp
-    save_return_value = code_generator.save_return_value
-    print = code_generator.print
-    assign = code_generator.assign
-    calc_arr_addr = code_generator.calc_arr_addr
-    relation = code_generator.relation
-    push_num_ss = code_generator.push_num_ss
-    start_args = code_generator.start_args
-    check_args = code_generator.check_args
-    mult = code_generator.mult
+class ActionNames(Enum):
+    PID = CodeGenerator.pid
+    ADD_OR_SUB = CodeGenerator.add_or_sub
+    PUSH_SS = CodeGenerator.push_ss
+    DCLR_VAR = CodeGenerator.declare_var
+    DCLR_ARR = CodeGenerator.declare_arr
+    UPDATE_FUNC_PARAMS = CodeGenerator.update_func_params
+    END_FUNC = CodeGenerator.end_func
+    SAVE_PARAM_LIST = CodeGenerator.save_param_list
+    SAVE_PARAM_NORM = CodeGenerator.save_param_norm
+    SAVE_JMP_OUT_SCOPE = CodeGenerator.save_jmp_out_scope
+    SAVE_IF_COND_JPF = CodeGenerator.save_if_cond_jpf
+    FILL_IF_COND_JPF = CodeGenerator.fill_if_cond_jpf
+    FILL_IF_COND_JPT = CodeGenerator.fill_if_cond_jpt
+    LOC_WHILE_COND_BEFORE = CodeGenerator.loc_while_cond_before
+    SAVE_WHILE_COND_JPF = CodeGenerator.save_while_cond_jpf
+    FILL_WHILE = CodeGenerator.fill_while
+    RETURN_JP = CodeGenerator.return_jp
+    SAVE_RETURN_VALUE = CodeGenerator.save_return_value
+    PRINT = CodeGenerator.print
+    ASSIGN = CodeGenerator.assign
+    CALC_ARR_ADDR = CodeGenerator.calc_arr_addr
+    RELATION = CodeGenerator.relation
+    PUSH_NUM_SS = CodeGenerator.push_num_ss
+    START_ARGS = CodeGenerator.start_args
+    CHECK_ARGS = CodeGenerator.check_args
+    MULT = CodeGenerator.mult

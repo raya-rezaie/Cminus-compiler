@@ -187,7 +187,7 @@ def main():
     stack = SemanticStack()
     runtime_mem = RunTimeMemory(programBlock(PB_BASE, PB_BOUND), dataBlock(
         DB_BASE, DB_BOUND), dataBlock(TP_BASE, TP_BOUND))
-    code_gen = code_generator(runtime_mem, stack, symbol_table)
+    code_gen = CodeGenerator(runtime_mem, stack, symbol_table)
 
     tree = parser()
 

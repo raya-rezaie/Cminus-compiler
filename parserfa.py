@@ -95,7 +95,7 @@ class ParserFA:
             to_s, tnt = transition
             if not tnt:  # epsilon transition, last priority
                 ep_next_state = to_s
-            elif isinstance(tnt, actionNames):
+            elif callable(tnt):
                 if to_s.is_terminal():
                     self.semantic_actions.exec_func(tnt, token)
                 else:
