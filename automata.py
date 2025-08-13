@@ -1,6 +1,7 @@
 from collections import defaultdict
 from enum import Enum
 
+
 class Error(Enum):
     INVALID_NUM = "Invalid number"
     INVALID_INPUT = "Invalid input"
@@ -27,11 +28,11 @@ class StateType(Enum):
 class State:
     def __init__(self, type=(StateType.DEF,), priority=0):
         self.type = type
-        self.priority = priority # lower number = higher priority
-    
+        self.priority = priority  # lower number = higher priority
+
     def is_terminal(self):
         return self.type[0] == StateType.ACCEPT or self.type[0] == StateType.ERROR
-    
+
     def get_highest_priority_final(states):
         hp_final_state = None
         for state in states:
@@ -45,30 +46,30 @@ class Alph:
         self.include_ranges = []
         self.exclude_ranges = []
         self.includes_all_chars = False
-    
+
     def __isInRanges(self, ranges, char):
         for range in ranges:
             if range[0] <= char <= range[1]:
                 return True
         return False
-    
+
     def __addToRanges(self, ranges, range):
         if (len(range) == 1):
             range = (range[0], range[0])
         ranges.append(range)
-    
+
     def include(self, range: tuple):
         self.__addToRanges(self.include_ranges, range)
         return self
-    
+
     def exclude(self, range: tuple):
         self.__addToRanges(self.exclude_ranges, range)
         return self
-    
+
     def includeAllChars(self):
         self.includes_all_chars = True
         return self
-    
+
     # char is in alphabet if it is included and not excluded
     def isInAlph(self, char):
         return (self.includes_all_chars or self.__isInRanges(self.include_ranges, char)) and (not self.__isInRanges(self.exclude_ranges, char))
@@ -77,22 +78,25 @@ class Alph:
 class Automata:
     def __init__(self, startState, default_panic_alph=Alph()):
         self.startState = startState
-        self.default_panic_alph = default_panic_alph # if we are in any state and char is in default_panic_alph, we are transfered to default_panic_state
-        self.default_panic_state = State((StateType.ERROR, Error.INVALID_INPUT), -10)
+        # if we are in any state and char is in default_panic_alph, we are transfered to default_panic_state
+        self.default_panic_alph = default_panic_alph
+        self.default_panic_state = State(
+            (StateType.ERROR, Error.INVALID_INPUT), -10)
         self.transitions = defaultdict(list)
         self.states = [self.startState, self.default_panic_state]
         self.add_transition_to_panic(self.startState)
         # panic does not have a default_panic_alph transition to itself since invalid input is generated for each char in default_panic_alph
 
-    def add_transition_to_panic (self, from_s):
-        self.transitions[from_s].append((self.default_panic_state, self.default_panic_alph))
+    def add_transition_to_panic(self, from_s):
+        self.transitions[from_s].append(
+            (self.default_panic_state, self.default_panic_alph))
 
     def getStartState(self):
         return self.startState
-    
-    def addState(self, state, add_transition_to_panic = True):
+
+    def addState(self, state, add_transition_to_panic=True):
         self.states.append(state)
-        if add_transition_to_panic: # this value is set to false for the state in the middle of a comment
+        if add_transition_to_panic:  # this value is set to false for the state in the middle of a comment
             self.add_transition_to_panic(state)
         return
 
@@ -108,10 +112,12 @@ class Automata:
                         to_states.append(transition[0])
         return to_states
 
-def token_type (token):
+
+def token_type(token):
     if token[0] == Token.ID or token[0] == Token.NUM or token[0] == Token.EOF:
         return token[0].value
     return token[1]
+
 
 def format_token(token):
     if token[0] == Token.EOF:

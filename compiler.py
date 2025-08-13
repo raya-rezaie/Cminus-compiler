@@ -13,6 +13,7 @@ from semantic_stack import *
 kept_token = None
 global_EOF = True
 
+
 def get_next_token_aux():
     global cminusautomata
     global reader
@@ -34,6 +35,7 @@ def get_next_token_aux():
     final_state = State.get_highest_priority_final(states)
     return final_state.type, token, newlines
 
+
 def get_next_token():
     global reader
     global symbol_table
@@ -54,12 +56,15 @@ def get_next_token():
             if state_type[1] == Token.ID:
                 symbol_table.add_symbol(next_token)
             if not (state_type[1] == Token.WHITESPACE or state_type[1] == Token.COMMENT):
-                token_info.add_info("(" + state_type[1].value + ", " + str(next_token) + ")")
+                token_info.add_info(
+                    "(" + state_type[1].value + ", " + str(next_token) + ")")
         elif state_type[0] == StateType.ERROR:
             scanner_has_error = True
             if state_type[1] == Error.UNCLOSED_COMMENT:
-                next_token = next_token[:7] + "..." # only print first seven characters of unclosed comment
-            scanner_error_info.add_info("(" + next_token + ", " + state_type[1].value + ")")
+                # only print first seven characters of unclosed comment
+                next_token = next_token[:7] + "..."
+            scanner_error_info.add_info(
+                "(" + next_token + ", " + state_type[1].value + ")")
         line_no += newlines
         token_info.add_counter(newlines)
         scanner_error_info.add_counter(newlines)
@@ -69,12 +74,13 @@ def get_next_token():
         return (state_type[1], next_token)
     else:
         return (Token.EOF, "$")
-    
+
+
 def parser():
     global parser_has_error
     global parser_error_info
     global code_gen
-    
+
     startNT = cminusParseFA(apply_fa, code_gen)
     next_token = get_next_token()
     err = startNT.handleErrorStartNT(next_token)
@@ -85,7 +91,8 @@ def parser():
         if err == SyntaxError.ILLEGAL:
             parser_has_error = True
             if next_token[0] == Token.EOF:
-                parser_error_info.add_info('Unexpected ' + token_type(next_token))
+                parser_error_info.add_info(
+                    'Unexpected ' + token_type(next_token))
             else:
                 parser_error_info.add_info('illegal ' + token_type(next_token))
             next_token = get_next_token()
@@ -95,9 +102,11 @@ def parser():
         tree.children.append(Tree("$"))
     return tree
 
+
 def keep_token(token):
     global kept_token
     kept_token = token
+
 
 def apply_fa(fa, token):
     global parser_has_error
@@ -109,7 +118,7 @@ def apply_fa(fa, token):
         if (token[0] == Token.EOF):
             EOF = False
         next_state, tree = fa.nextState(current_state, token)
-        if isinstance(next_state, SyntaxError): # error handling
+        if isinstance(next_state, SyntaxError):  # error handling
             if next_state == SyntaxError.MISSINGT or next_state == SyntaxError.MISSINGNT:
                 if str(tree[1]) == "EOF":
                     EOF = False
@@ -122,13 +131,14 @@ def apply_fa(fa, token):
             elif next_state == SyntaxError.ILLEGAL:
                 if token[0] == Token.EOF:
                     parser_has_error = True
-                    parser_error_info.add_info('Unexpected ' + token_type(token))
+                    parser_error_info.add_info(
+                        'Unexpected ' + token_type(token))
                 else:
                     parser_has_error = True
                     parser_error_info.add_info('illegal ' + token_type(token))
         else:
             if tree == 23:
-                pass # executed action symbol
+                pass  # executed action symbol
             elif tree:
                 subtrees.append(tree)
             else:
@@ -142,7 +152,7 @@ def apply_fa(fa, token):
         token = get_next_token()
         global_EOF = global_EOF and EOF
     return subtrees
-        
+
 
 def main():
     # SCANNER INITIALIZATION
@@ -158,14 +168,15 @@ def main():
     global code_gen
     cminusautomata = buildCMinusAutomata()
     reader = CharReader('input.txt')
-    symbol_table = SymbolTable(['break', 'else', 'if', 'int', 'while', 'return', 'void'])
+    symbol_table = SymbolTable(
+        ['break', 'else', 'if', 'int', 'while', 'return', 'void'])
     token_info = LineInfo()
     scanner_error_info = LineInfo()
     scanner_has_error = False
     parser_error_info = LineInfo()
     parser_has_error = False
     line_no = 1
-    
+
     # CODE GENERATION INITIALIZATION
     PB_BASE = 0
     PB_BOUND = 99
@@ -174,7 +185,8 @@ def main():
     TP_BASE = 500
     TP_BOUND = 1000
     stack = SemanticStack()
-    runtime_mem = RunTimeMemory(programBlock(PB_BASE , PB_BOUND), dataBlock(DB_BASE, DB_BOUND), dataBlock(TP_BASE, TP_BOUND))
+    runtime_mem = RunTimeMemory(programBlock(PB_BASE, PB_BOUND), dataBlock(
+        DB_BASE, DB_BOUND), dataBlock(TP_BASE, TP_BOUND))
     code_gen = code_generator(runtime_mem, stack, symbol_table)
 
     tree = parser()
@@ -199,7 +211,7 @@ def main():
     token_file = open('parse_tree.txt', 'w',  encoding='utf-8')
     token_file.write(str(tree))
     token_file.close()
-    
+
     parser_error_file = open('syntax_errors.txt', 'w', encoding='utf-8')
     if not parser_has_error:
         parser_error_file.write('There is no syntax error.')
@@ -208,5 +220,5 @@ def main():
     parser_error_file.close()
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     main()
