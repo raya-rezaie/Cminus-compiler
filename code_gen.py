@@ -23,14 +23,13 @@ class CodeGenerator:
             self.stack.push('PRINT')
             return
 
-        entry = self.symbol_table.get_symbol_full(self.token[1])
+        entry = self.symbol_table.get_symbol_full(self.token[1], self.scope)
 
         if entry is None:
             # TODO: catch errors to handle semantic errors
             raise NameError(f"Undefined identifier {self.token[1]}")
 
-        addr = entry[2]
-        self.stack.push(addr)
+        self.stack.push(entry.loc)
 
     def add_or_sub(self):
         rand2 = self.stack.pop()
@@ -52,9 +51,9 @@ class CodeGenerator:
         type = self.stack.pop()
         memory_index = self.db.alloc_memory()
         self.db.set_value(memory_index, 0)
-        self.symbol_table.set_symbol_type(name, SymbolType(type))
-        self.symbol_table.set_symbol_len(name, 1)
-        self.symbol_table.set_symbol_loc(name, memory_index)
+        self.symbol_table.set_symbol_type(name, SymbolType(type), self.scope)
+        self.symbol_table.set_symbol_len(name, 1, self.scope)
+        self.symbol_table.set_symbol_loc(name, memory_index, self.scope)
 
     def declare_arr(self):
         # is the type and size ok? (fekr konam are)
@@ -67,9 +66,9 @@ class CodeGenerator:
             if start_loc == None:
                 start_loc = self.db.alloc_memory()
             self.db.set_value(loc, 0)
-        self.symbol_table.set_symbol_type(name, type)
-        self.symbol_table.set_symbol_len(name, size)
-        self.symbol_table.set_symbol_loc(name, start_loc)
+        self.symbol_table.set_symbol_type(name, type, self.scope)
+        self.symbol_table.set_symbol_len(name, size, self.scope)
+        self.symbol_table.set_symbol_loc(name, start_loc, self.scope)
 
     def update_func_params(self):
         pass
@@ -229,6 +228,7 @@ class CodeGenerator:
 
     def _exit_scope(self):
         del self.breaks[self.scope]
+        self.symbol_table.scope_symbols[self.scope].clear()
         self.scope -= 1
         return self.scope
 
