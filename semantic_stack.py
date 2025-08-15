@@ -17,9 +17,9 @@ class SemanticStack:
             self.stack.pop()
             count -= 1
         self.sp -= 1
-        if self.is_empty():
-            print("stack is emty")
-            return 
+        # if self.is_empty():
+        #     print("stack is emty")
+        #     return 
         return self.stack.pop()
 
     def is_empty(self):  # what does it return?

@@ -12,12 +12,12 @@ class SymbolType(Enum):
 
 
 class Symbol:
-    def __init__(self, name, loc=-1, type=SymbolType.TBD, length=1):
+    def __init__(self, name, type=SymbolType.TBD, loc=-1, length=1):
         self.name = name
-        self.loc = loc
         self.type = type
+        self.loc = loc
         self.length = length
-        self.params = None
+        self.params = []
 
 
 class SymbolTable:
@@ -67,7 +67,7 @@ class SymbolTable:
         if scope < -1:
             return
         scope_symbol = self.scope_symbols[scope]
-    
+
         for i in range(len(scope_symbol)):
             if scope_symbol[i].name == name:
                 scope_symbol[i].length = length
@@ -77,9 +77,12 @@ class SymbolTable:
     def get_symbol(self, name, scope):  # if symbol is not in table, None is returned
         result = self.get_symbol_with_scope(name, scope)
         if result:
+            print("found symbol", name, "in scope",
+                  scope, "full symbol", result[0].loc)
             return result[0]
+        print("COULDNT FIND SYMBOL", name, "in scope", scope)
         return None
-    
+
     def get_symbol_with_scope(self, name, scope):
         if scope < -1:
             return None
@@ -87,7 +90,7 @@ class SymbolTable:
         for ss in scope_symbol:
             if ss.name == name:
                 return (ss, scope)
-        return self.get_symbol(name, scope - 1)
+        return self.get_symbol_with_scope(name, scope - 1)
 
     def find_addr(self, name, scope):
         result = self.get_symbol(name, scope)

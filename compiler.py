@@ -56,7 +56,8 @@ def get_next_token():
         state_type, next_token, newlines = get_next_token_aux()
         if state_type[0] == StateType.ACCEPT:
             if state_type[1] == Token.ID:
-                symbol_table.add_symbol(next_token, scope=code_gen.scope)
+                # symbol_table.add_symbol(next_token, scope=code_gen.scope)
+                pass
             if not (state_type[1] == Token.WHITESPACE or state_type[1] == Token.COMMENT):
                 token_info.add_info(
                     "(" + state_type[1].value + ", " + str(next_token) + ")")
