@@ -7,7 +7,7 @@ DeclarationPrime -> FunDeclarationPrime
 DeclarationPrime -> VarDeclarationPrime
 VarDeclarationPrime -> ; #dclr_var                                                                      
 VarDeclarationPrime -> [ #push_ss NUM ] ; #dclr_arr                                                     
-FunDeclarationPrime -> ( Params ) #update_func_params CompoundStmt #end_func
+FunDeclarationPrime -> #add_scope ( Params ) #update_func_params CompoundStmt #end_func
 TypeSpecifier -> int
 TypeSpecifier -> void
 Params -> #push_ss int #push_ss ID ParamPrime ParamList
@@ -79,6 +79,6 @@ FactorZegond -> ( Expression )
 FactorZegond -> #push_num_ss NUM
 Args -> ArgList
 Args -> EPSILON
-ArgList -> Expression ArgListPrime
-ArgListPrime -> , Expression ArgListPrime
+ArgList -> Expression #push_arg ArgListPrime
+ArgListPrime -> , Expression #push_arg ArgListPrime
 ArgListPrime -> EPSILON

@@ -17,6 +17,7 @@ class Symbol:
         self.loc = loc
         self.type = type
         self.length = length
+        self.params = None
 
 
 class SymbolTable:
@@ -35,9 +36,10 @@ class SymbolTable:
             self.add_symbol(keyword)
 
     def add_symbol(self, name, type=SymbolType.TBD, loc=0, len=1, scope=-1):
-        # if symbol is already in table do nothing
-        if self.get_symbol(name, scope):
-            return
+        # if symbol is already in current scope do nothing
+        for ss in self.scope_symbols[scope]:
+            if ss.name == name:
+                return
         # otherwise add symbol to table and update counter
         self.scope_symbols[scope].append(Symbol(name, type, loc, len))
 
@@ -73,25 +75,22 @@ class SymbolTable:
         self.set_symbol_len(name, length, scope - 1)
 
     def get_symbol(self, name, scope):  # if symbol is not in table, None is returned
+        result = self.get_symbol_with_scope(name, scope)
+        if result:
+            return result[0]
+        return None
+    
+    def get_symbol_with_scope(self, name, scope):
         if scope < -1:
             return None
         scope_symbol = self.scope_symbols[scope]
         for ss in scope_symbol:
             if ss.name == name:
-                return ss
+                return (ss, scope)
         return self.get_symbol(name, scope - 1)
 
-    def get_symbol_full(self, name, scope):
-        if scope < -1:
-            return None
-        scope_symbol = self.scope_symbols[scope]
-        for ss in scope_symbol:
-            if ss.name == name:
-                return ss
-        return self.get_symbol_full(name, scope - 1)
-
     def find_addr(self, name, scope):
-        result = self.get_symbol_full(name, scope)
+        result = self.get_symbol(name, scope)
         if result:
             return result.loc
         return None

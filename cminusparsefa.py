@@ -151,7 +151,7 @@ def cminusParseFA(apply_fa, semantic_action):
               CLOSEBRACKET, SEMICOLON, ActionNames.DCLR_ARR]], var_declaration_prime, semantic_action)
 
     # 7. FUN DECLARATION PRIME
-    create_fa([[OPENPAR, params, CLOSEPAR, ActionNames.UPDATE_FUNC_PARAMS,
+    create_fa([[ActionNames.ADD_SCOPE, OPENPAR, params, CLOSEPAR, ActionNames.UPDATE_FUNC_PARAMS,
               compound_stmt, ActionNames.END_FUNC]], fun_declaration_prime, semantic_action)
 
     # 8. TYPE SPECIFIER
@@ -164,7 +164,7 @@ def cminusParseFA(apply_fa, semantic_action):
     # 10. PARAM LIST
     create_fa([[COMMA, param, param_list], [None]],
               param_list, semantic_action)
-    
+
     # 11. PARAM
     create_fa([[declaration_initial, param_prime]], param, semantic_action)
 
@@ -296,10 +296,11 @@ def cminusParseFA(apply_fa, semantic_action):
     create_fa([[arg_list], [None]], args, semantic_action)
 
     # 46. ARG LIST
-    create_fa([[expression, arg_list_prime]], arg_list, semantic_action)
+    create_fa([[expression, ActionNames.PUSH_ARG, arg_list_prime]],
+              arg_list, semantic_action)
 
     # 47. ARG LIST PRIME
-    create_fa([[COMMA, expression, arg_list_prime], [None]],
+    create_fa([[COMMA, expression, ActionNames.PUSH_ARG, arg_list_prime], [None]],
               arg_list_prime, semantic_action)
 
     return program

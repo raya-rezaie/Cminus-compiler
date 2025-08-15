@@ -12,12 +12,14 @@ class CodeGenerator:
         self.symbol_table = symbol_table
         self.scope = 0
         self.breaks = {}
+        self.func_names = []
         self.func_scopes = []
+        self.called_function = []
         self.returns = {}
         self.return_val_slot = self.tb.alloc_memory()
+        self.return_addr_slot = self.tb.alloc_memory()
         self.token = ""
-        self.arg_stack = []
-
+        self.arg_stack = {}
 
     def exec_func(self, type, token):
         self.token = token
@@ -28,7 +30,7 @@ class CodeGenerator:
             self.stack.push('PRINT')
             return
 
-        entry = self.symbol_table.get_symbol_full(self.token[1], self.scope)
+        entry = self.symbol_table.get_symbol(self.token[1], self.scope)
 
         if entry is None:
             # TODO: catch errors to handle semantic errors
@@ -75,7 +77,7 @@ class CodeGenerator:
         self.symbol_table.set_symbol_len(name, size, self.scope)
         self.symbol_table.set_symbol_loc(name, start_loc, self.scope)
 
-    def update_func_params(self):
+    def add_scope(self):
         func_name = self.stack.pop()
         func_type = SymbolType(self.stack.pop())
         if func_type == SymbolType.INT:
@@ -86,38 +88,47 @@ class CodeGenerator:
             return  # maybe error
 
         # function's own scope is one less than its args => when accessing args, use function_scope + 1
-        self.symbol_table.set_symbol_type(func_name. func_type, self.scope)
-        self.func_scopes.append(self.scope + 1)
-        self.returns[self.scope + 1] = []
+        self.func_names.append(func_name)
+        self.func_scopes.append(self.scope)
+        self.returns[self.scope] = []
+        self.scope += 1
+
+    def update_func_params(self):
+        pass
 
     def end_func(self):
-        return_pc = self.stack.pop()
-        ins = ThreeAddressCode(ThreeAddressCodeType.jp, return_pc)
+        ins = ThreeAddressCode(ThreeAddressCodeType.jp,
+                               f"@{self.return_addr_slot}")
         func_scope = self.func_scopes.pop()
         for return_idx in self.returns[func_scope]:
             self.pb.add_instruction_at(ins, return_idx)
         del self.returns[func_scope]
 
     def save_param_list(self):
-        function_scope = self.scope + 1
         name = self.stack.pop()
         type = self.stack.pop()
         if type != SymbolType.INT.value:
             return  # only int arrays => maybe print error
         type = SymbolType.INT_INDIRECT
-        self.symbol_table.set_symbol_type(name, type, function_scope)
-        arg_ptr_loc = self.db.alloc_memory()
-        self.symbol_table.set_symbol_loc(name, arg_ptr_loc, function_scope)
+        param_symbol = self.symbol_table.get_symbol(name, type, self.scope)
+        param_symbol.type = type
+        param_symbol.loc = self.db.alloc_memory()
+        func_symbol = self.symbol_table.get_symbol(
+            self.func_names[-1], self.func_scopes[-1])
+        func_symbol.params.append(param_symbol)
 
     def save_param_norm(self):
-        function_scope = self.scope + 1
         name = self.stack.pop()
+        type = self.stack.pop()
         type = SymbolType(self.stack.pop())  # must be int
         if type != SymbolType.INT:
             return  # maybe print error
-        self.symbol_table.set_symbol_type(name, type, function_scope)
-        arg_ptr_loc = self.db.alloc_memory()
-        self.symbol_table.set_symbol_loc(name, arg_ptr_loc, function_scope)
+        param_symbol = self.symbol_table.get_symbol(name, type, self.scope)
+        param_symbol.type = type
+        param_symbol.loc = self.db.alloc_memory()
+        func_symbol = self.symbol_table.get_symbol(
+            self.func_names[-1], self.func_scopes[-1])
+        func_symbol.params.append(param_symbol)
 
     def save_jmp_out_scope(self):  # unconditional jump to fill later
         jmp_idx = self.pb.add_instruction_and_increase(
@@ -255,34 +266,47 @@ class CodeGenerator:
         self.stack.push('#' + self.token[1])
 
     def start_args(self):
-        self.arg_stack.clear()
+        func_name = self.stack.top()
+        func_sym = self.symbol_table.get_symbol(func_name, self.scope)
+        self.arg_stack[func_sym] = []
+        self.called_function.append(func_sym)
+
     def push_arg(self):
-        val = self.stack.pop()   
-        self.arg_stack.append(val)
+        val = self.stack.pop()
+        self.arg_stack[self.called_function[-1]].append(val)
 
     def check_args(self):
-        func_name = self.stack.pop()  # the ID of the function being called
+        func_sym = self.called_function.pop()
+        # func_name = self.stack.pop()  # the ID of the function being called
 
         # get parameter names from symbol table
-        params = self.symbol_table.get_params(func_name)
+        params = func_sym.params
 
         # copy arguments into parameter slots
-        for arg_val, param_name in zip(self.arg_stack, params):
-            param_loc = self.symbol_table.get_symbol_loc(param_name, self.func_scope_of(func_name))
-            instr = ThreeAddressCode(ThreeAddressCodeType.assign, arg_val, param_loc, None)
+        for arg_val, param in zip(self.arg_stack[func_sym], params):
+            param_loc = param.loc
+            if param.type == SymbolType.INT_INDIRECT:
+                instr = ThreeAddressCode(
+                    ThreeAddressCodeType.assign, f"#{arg_val}", param_loc, None)
+            else:
+                instr = ThreeAddressCode(
+                    ThreeAddressCodeType.assign, arg_val, param_loc, None)
+
             self.pb.add_instruction_and_increase(instr)
-            
 
         # jump to function start
-        func_start = self.func_start_addrs[func_name]
-        instr = ThreeAddressCode(ThreeAddressCodeType.jp, func_start, None, None)
+        func_start = self.func_start_addrs[func_sym.name]
+        instr = ThreeAddressCode(
+            ThreeAddressCodeType.jp, func_start, None, None)
         self.pb.add_instruction_and_increase(instr)
+        self.return_addr_slot = self.pb.get_index()
 
         # push return value location if needed
-        if self.symbol_table.get_symbol_type(func_name) != SymbolType.VOID_FUNC:
-            self.stack.push(self.return_val_loc[func_name])
+        # if self.symbol_table.get_symbol_type(func_name) != SymbolType.VOID_FUNC:
+        #     self.stack.push(self.return_val_loc[func_name])
 
         self.arg_stack.clear()
+
     def mult(self):
         right = self.stack.pop()
         left = self.stack.pop()
@@ -346,6 +370,7 @@ class ActionNames(Enum):
     PUSH_SS = CodeGenerator.push_ss
     DCLR_VAR = CodeGenerator.declare_var
     DCLR_ARR = CodeGenerator.declare_arr
+    ADD_SCOPE = CodeGenerator.add_scope
     UPDATE_FUNC_PARAMS = CodeGenerator.update_func_params
     END_FUNC = CodeGenerator.end_func
     SAVE_PARAM_LIST = CodeGenerator.save_param_list
@@ -370,3 +395,4 @@ class ActionNames(Enum):
     START_ARGS = CodeGenerator.start_args
     CHECK_ARGS = CodeGenerator.check_args
     MULT = CodeGenerator.mult
+    PUSH_ARG = CodeGenerator.push_arg
