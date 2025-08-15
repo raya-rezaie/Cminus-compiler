@@ -173,8 +173,8 @@ def cminusParseFA(apply_fa, semantic_action):
               None, ActionNames.SAVE_PARAM_NORM]], param_prime, semantic_action)
 
     # 13. COMPOUND STMT
-    create_fa([[OPENCURLY,  declaration_list, statement_list,
-              CLOSECURLY]], compound_stmt, semantic_action)
+    create_fa([[ActionNames.ENTER_SCOPE, OPENCURLY,  declaration_list, statement_list,
+              CLOSECURLY, ActionNames.EXIT_SCOPE]], compound_stmt, semantic_action)
 
     # 14. STATEMENT LIST
     create_fa([[statement, statement_list], [None]],
@@ -185,7 +185,7 @@ def cminusParseFA(apply_fa, semantic_action):
               iteration_stmt], [return_stmt]], statement, semantic_action)
 
     # 16. EXPRESSION STMT
-    create_fa([[expression, SEMICOLON], [BREAK, SEMICOLON, ActionNames.SAVE_JMP_OUT_SCOPE], [
+    create_fa([[expression, SEMICOLON, ActionNames.REMOVE_LAST_EXP_RESULT], [BREAK, SEMICOLON, ActionNames.SAVE_JMP_OUT_SCOPE], [
               SEMICOLON]], expression_stmt, semantic_action)
 
     # 17. SELECTION STMT
@@ -205,7 +205,7 @@ def cminusParseFA(apply_fa, semantic_action):
 
     # 21. EXPRESSION
     create_fa([[simple_expression_zegond], [ActionNames.PID, ID,
-              b, ActionNames.PRINT]], expression, semantic_action)
+              b, ActionNames.PRINT_FUNC]], expression, semantic_action)
 
     # 22. B
     create_fa([[EQUAL, expression, ActionNames.ASSIGN], [OPENBRACKET, expression, CLOSEBRACKET,

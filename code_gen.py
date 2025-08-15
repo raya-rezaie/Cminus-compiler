@@ -40,7 +40,7 @@ class CodeGenerator:
         temp = self.tb.alloc_memory()
         self.stack.push(temp)
         instruction = ThreeAddressCode(rator, rand1, rand2, temp)
-        self.pb.add_instruction(instruction)
+        self.pb.add_instruction_and_increase(instruction)
 
     def push_ss(self):
         self.stack.push(self.token[1])
@@ -114,7 +114,8 @@ class CodeGenerator:
         self.pb.add_instruction_at(instr, jmp_idx)
 
     def loc_while_cond_before(self):
-        self.stack.push(self.pb.get_index())
+        index = self.pb.get_index()
+        self.stack.push(index)
 
     def save_while_cond_jpf(self):
         index = self.pb.get_index()
@@ -126,15 +127,13 @@ class CodeGenerator:
 
     # assumes stack = pc after while cond | result of cond | pc before while cond | ...
     def fill_while(self):
+        print("entering fill while")
         uncond_jmp_idx = self.pb.get_index()
         # add conditional jump after checking while condition
         cond_jmp = ThreeAddressCode(
             ThreeAddressCodeType.jpf, self.stack.top(1), uncond_jmp_idx + 1)
         cond_jmp_idx = self.stack.top(0)
-        if cond_jmp_idx.isdigit():
-            self.pb.add_instruction_at(cond_jmp, int(cond_jmp_idx))
-        else:
-            pass  # bad stack, maybe report
+        self.pb.add_instruction_at(cond_jmp, cond_jmp_idx)
 
         # add unconditional jump to before while condition, after while instructions
         uncond_jmp = ThreeAddressCode(
@@ -149,6 +148,7 @@ class CodeGenerator:
         for b in self.breaks[self.scope]:
             self.pb.add_instruction_at(break_ins, b)
         self._exit_scope()
+        print("exiting fill while")
 
     def return_jp(self):
         pass
@@ -156,7 +156,7 @@ class CodeGenerator:
     def save_return_value(self):
         pass
 
-    def print(self):
+    def print_func(self):
         # pops the variable and prints it
         if self.stack.top(1) == 'PRINT':
             item = self.stack.pop()
@@ -165,8 +165,8 @@ class CodeGenerator:
             self.pb.add_instruction_and_increase(instr)
 
     def assign(self):
-        instr = ThreeAddressCode(ThreeAddressCodeType.assign, str(
-            self.stack.pop()), str(self.stack.top()))
+        instr = ThreeAddressCode(ThreeAddressCodeType.assign,
+                                 self.stack.pop(), self.stack.top())
         self.pb.add_instruction_and_increase(instr)
 
     def calc_arr_addr(self):
@@ -196,9 +196,10 @@ class CodeGenerator:
         right = self.stack.pop()
         op_sym = self.stack.pop()
         left = self.stack.pop()
+
         t = self.new_temp()
         if op_sym == '<':
-            instr = (ThreeAddressCodeType.lt, left, right, t)
+            instr = ThreeAddressCode(ThreeAddressCodeType.lt, left, right, t)
             self.pb.add_instruction_and_increase(instr)
         elif op_sym == '==':
             instr = ThreeAddressCode(
@@ -219,7 +220,12 @@ class CodeGenerator:
         pass
 
     def mult(self):
-        self.binary_op_helper(ThreeAddressCodeType.mult)
+        right = self.stack.pop()
+        left = self.stack.pop()
+        t = self.new_temp()
+        instr = ThreeAddressCode(ThreeAddressCodeType.mult, left, right, t)
+        self.pb.add_instruction_and_increase(instr)
+        self.stack.push(t)
 
     def _enter_scope(self):
         self.scope += 1
@@ -232,13 +238,8 @@ class CodeGenerator:
         self.scope -= 1
         return self.scope
 
-    # def binary_op_helper(self, op_enum):
-    #     right = self.stack.pop()
-    #     left = self.stack.pop()
-    #     t = self.new_temp()
-    #     instr = ThreeAddressCode(op_enum, left, right, t)
-    #     self.pb.add_instruction_and_increase(instr)
-    #     self.stack.push(t)
+    def remove_last_exp_result(self):
+        self.stack.pop()
 
     # def format_token(self, token):
         # Convert (TOKEN_TYPE, TOKEN_VALUE) or int address to  three address codes
@@ -259,12 +260,12 @@ class CodeGenerator:
     #         return str(tval)
     #     else:
     #         raise ValueError(f"Unknown token type {ttype}")
-    # def new_temp(self):
-    #     #getting new temp
-    #     temp_addr = self.tb.alloc_memory()
-    #     if temp_addr == -1:
-    #         raise MemoryError("No temp space")
-    #     return temp_addr
+    def new_temp(self):
+        # getting new temp
+        temp_addr = self.tb.alloc_memory()
+        if temp_addr == -1:
+            raise MemoryError("No temp space")
+        return temp_addr
     # def emit(self, op_enum, o1=None, o2=None, r=None):
     #     instr = ThreeAddressCode(
     #         op_enum,
@@ -285,6 +286,9 @@ class ActionNames(Enum):
     END_FUNC = CodeGenerator.end_func
     SAVE_PARAM_LIST = CodeGenerator.save_param_list
     SAVE_PARAM_NORM = CodeGenerator.save_param_norm
+    ENTER_SCOPE = CodeGenerator._enter_scope
+    EXIT_SCOPE = CodeGenerator._exit_scope
+    REMOVE_LAST_EXP_RESULT = CodeGenerator.remove_last_exp_result
     SAVE_JMP_OUT_SCOPE = CodeGenerator.save_jmp_out_scope
     SAVE_IF_COND_JPF = CodeGenerator.save_if_cond_jpf
     FILL_IF_COND_JPF = CodeGenerator.fill_if_cond_jpf
@@ -294,7 +298,7 @@ class ActionNames(Enum):
     FILL_WHILE = CodeGenerator.fill_while
     RETURN_JP = CodeGenerator.return_jp
     SAVE_RETURN_VALUE = CodeGenerator.save_return_value
-    PRINT = CodeGenerator.print
+    PRINT_FUNC = CodeGenerator.print_func
     ASSIGN = CodeGenerator.assign
     CALC_ARR_ADDR = CodeGenerator.calc_arr_addr
     RELATION = CodeGenerator.relation

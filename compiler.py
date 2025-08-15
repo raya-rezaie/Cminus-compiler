@@ -56,7 +56,7 @@ def get_next_token():
         state_type, next_token, newlines = get_next_token_aux()
         if state_type[0] == StateType.ACCEPT:
             if state_type[1] == Token.ID:
-                symbol_table.add_symbol(next_token, code_gen.scope)
+                symbol_table.add_symbol(next_token, scope=code_gen.scope)
             if not (state_type[1] == Token.WHITESPACE or state_type[1] == Token.COMMENT):
                 token_info.add_info(
                     "(" + state_type[1].value + ", " + str(next_token) + ")")
@@ -146,7 +146,7 @@ def apply_fa(fa, token):
             else:
                 subtrees.append(Tree("epsilon"))
 
-            if not tree:
+            if tree == 23 or not tree:
                 keep_token(token)
             current_state = next_state
         if current_state.is_terminal():
@@ -220,6 +220,10 @@ def main():
     else:
         parser_error_file.write(parser_error_info.format_to_text2())
     parser_error_file.close()
+
+    # CODE GEN FILES
+    code_gen_file = open('output.txt', 'w', encoding='utf-8')
+    code_gen_file.write(code_gen.pb.to_string())
 
 
 if __name__ == "__main__":

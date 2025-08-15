@@ -6,10 +6,12 @@ class SemanticStack:
         self.sp = 0
 
     def push(self, addr):
+        print("PUSH", self.stack)
         self.stack.append(addr)
         self.sp += 1
 
     def pop(self, count=1):
+        print("POP", self.stack)
         while count > 1:
             self.sp -= 1
             self.stack.pop()

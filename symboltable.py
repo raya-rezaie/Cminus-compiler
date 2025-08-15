@@ -1,6 +1,7 @@
 from enum import Enum
 from collections import defaultdict
 
+
 class SymbolType(Enum):
     TBD = ""
     INT = "int"
@@ -10,17 +11,18 @@ class SymbolType(Enum):
 
 
 class Symbol:
-    def __init__(self, name, loc=-1, type=SymbolType.TBD, len=1):
+    def __init__(self, name, loc=-1, type=SymbolType.TBD, length=1):
         self.name = name
         self.loc = loc
         self.type = type
-        self.len = len
+        self.length = length
 
 
 class SymbolTable:
     def __init__(self, keyword_list=[]):
         # a dictionary with format "scope: list of type Symbol"
-        self.scope_symbols = defaultdict(list)  # each symbol is the pair (number, symbol)
+        # each symbol is the pair (number, symbol)
+        self.scope_symbols = defaultdict(list)
         # self.types = []  # each symbol has a type (of Type SymbolType)
         # # each symbol has a location (functions: first line no., vars: location in memory)
         # self.locs = []
@@ -58,15 +60,16 @@ class SymbolTable:
                 return
         self.set_symbol_type(name, type, scope - 1)
 
-    def set_symbol_len(self, name, len, scope):
+    def set_symbol_len(self, name, length, scope):
         if scope < -1:
             return
         scope_symbol = self.scope_symbols[scope]
+    
         for i in range(len(scope_symbol)):
             if scope_symbol[i].name == name:
-                scope_symbol[i].len = len
+                scope_symbol[i].length = length
                 return
-        self.set_symbol_len(name, len, scope - 1)
+        self.set_symbol_len(name, length, scope - 1)
 
     def get_symbol(self, name, scope):  # if symbol is not in table, None is returned
         if scope < -1:
@@ -81,10 +84,10 @@ class SymbolTable:
         if scope < -1:
             return None
         scope_symbol = self.scope_symbols[scope]
-        for i in range(len(scope_symbol)):
-            if scope_symbol[i].name == name:
-                return scope_symbol[i]
-        return None
+        for ss in scope_symbol:
+            if ss.name == name:
+                return ss
+        return self.get_symbol_full(name, scope - 1)
 
     def find_addr(self, name, scope):
         result = self.get_symbol_full(name, scope)
