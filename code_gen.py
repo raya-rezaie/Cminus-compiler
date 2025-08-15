@@ -261,23 +261,28 @@ class CodeGenerator:
         self.arg_stack.append(val)
 
     def check_args(self):
-        func_loc = self.stack.pop()
+        func_name = self.stack.pop()  # the ID of the function being called
 
-    # Pass each argument
-        for idx, arg in enumerate(self.arg_stack):
-            instr = ThreeAddressCode(ThreeAddressCodeType.assign, arg, f"ARG{idx}")
+        # get parameter names from symbol table
+        params = self.symbol_table.get_params(func_name)
+
+        # copy arguments into parameter slots
+        for arg_val, param_name in zip(self.arg_stack, params):
+            param_loc = self.symbol_table.get_symbol_loc(param_name, self.func_scope_of(func_name))
+            instr = ThreeAddressCode(ThreeAddressCodeType.assign, arg_val, param_loc, None)
             self.pb.add_instruction_and_increase(instr)
+            
 
-        # Call function
-        call_instr = ThreeAddressCode(ThreeAddressCodeType.call, func_loc)
-        self.pb.add_instruction_and_increase(call_instr)
+        # jump to function start
+        func_start = self.func_start_addrs[func_name]
+        instr = ThreeAddressCode(ThreeAddressCodeType.jp, func_start, None, None)
+        self.pb.add_instruction_and_increase(instr)
 
-        # Push return value slot if not void
-        self.stack.push(self.return_val_slot)
+        # push return value location if needed
+        if self.symbol_table.get_symbol_type(func_name) != SymbolType.VOID_FUNC:
+            self.stack.push(self.return_val_loc[func_name])
 
-        # Reset arg stack for next call
         self.arg_stack.clear()
-
     def mult(self):
         right = self.stack.pop()
         left = self.stack.pop()
