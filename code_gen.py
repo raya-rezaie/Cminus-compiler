@@ -12,6 +12,9 @@ class CodeGenerator:
         self.symbol_table = symbol_table
         self.scope = 0
         self.breaks = {}
+        self.func_scopes = []
+        self.returns = {}
+        self.return_val_slot = self.tb.alloc_memory()
         self.token = ""
 
     def exec_func(self, type, token):
@@ -71,16 +74,48 @@ class CodeGenerator:
         self.symbol_table.set_symbol_loc(name, start_loc, self.scope)
 
     def update_func_params(self):
-        pass
+        func_name = self.stack.pop()
+        func_type = SymbolType(self.stack.pop())
+        if func_type == SymbolType.INT:
+            func_type = SymbolType.INT_FUNC
+        elif func_type == SymbolType.VOID:
+            func_type = SymbolType.VOID_FUNC
+        else:
+            return  # maybe error
+
+        # function's own scope is one less than its args => when accessing args, use function_scope + 1
+        self.symbol_table.set_symbol_type(func_name. func_type, self.scope)
+        self.func_scopes.append(self.scope + 1)
+        self.returns[self.scope + 1] = []
 
     def end_func(self):
-        pass
+        return_pc = self.stack.pop()
+        ins = ThreeAddressCode(ThreeAddressCodeType.jp, return_pc)
+        func_scope = self.func_scopes.pop()
+        for return_idx in self.returns[func_scope]:
+            self.pb.add_instruction_at(ins, return_idx)
+        del self.returns[func_scope]
 
     def save_param_list(self):
-        pass
+        function_scope = self.scope + 1
+        name = self.stack.pop()
+        type = self.stack.pop()
+        if type != SymbolType.INT.value:
+            return  # only int arrays => maybe print error
+        type = SymbolType.INT_INDIRECT
+        self.symbol_table.set_symbol_type(name, type, function_scope)
+        arg_ptr_loc = self.db.alloc_memory()
+        self.symbol_table.set_symbol_loc(name, arg_ptr_loc, function_scope)
 
     def save_param_norm(self):
-        pass
+        function_scope = self.scope + 1
+        name = self.stack.pop()
+        type = SymbolType(self.stack.pop())  # must be int
+        if type != SymbolType.INT:
+            return  # maybe print error
+        self.symbol_table.set_symbol_type(name, type, function_scope)
+        arg_ptr_loc = self.db.alloc_memory()
+        self.symbol_table.set_symbol_loc(name, arg_ptr_loc, function_scope)
 
     def save_jmp_out_scope(self):  # unconditional jump to fill later
         jmp_idx = self.pb.add_instruction_and_increase(
@@ -127,7 +162,6 @@ class CodeGenerator:
 
     # assumes stack = pc after while cond | result of cond | pc before while cond | ...
     def fill_while(self):
-        print("entering fill while")
         uncond_jmp_idx = self.pb.get_index()
         # add conditional jump after checking while condition
         cond_jmp = ThreeAddressCode(
@@ -148,13 +182,18 @@ class CodeGenerator:
         for b in self.breaks[self.scope]:
             self.pb.add_instruction_at(break_ins, b)
         self._exit_scope()
-        print("exiting fill while")
 
     def return_jp(self):
-        pass
+        filler_jp = ThreeAddressCode(ThreeAddressCodeType.jp, 0)
+        self.returns[self.func_scopes[-1]
+                     ].append(self.pb.add_instruction_and_increase(filler_jp))
 
     def save_return_value(self):
-        pass
+        return_val = self.stack.pop()
+        assign_ins = ThreeAddressCode(
+            ThreeAddressCodeType.assign, return_val, self.return_val_slot)
+        self.pb.add_instruction_and_increase(assign_ins)
+        self.return_jp()
 
     def print_func(self):
         # pops the variable and prints it

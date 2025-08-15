@@ -6,6 +6,7 @@ class SymbolType(Enum):
     TBD = ""
     INT = "int"
     VOID = "void"
+    INT_INDIRECT = "int []"
     INT_FUNC = "int func"
     VOID_FUNC = "void func"
 
