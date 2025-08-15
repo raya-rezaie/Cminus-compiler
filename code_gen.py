@@ -16,6 +16,8 @@ class CodeGenerator:
         self.returns = {}
         self.return_val_slot = self.tb.alloc_memory()
         self.token = ""
+        self.arg_stack = []
+
 
     def exec_func(self, type, token):
         self.token = token
@@ -253,10 +255,28 @@ class CodeGenerator:
         self.stack.push('#' + self.token[1])
 
     def start_args(self):
-        pass
+        self.arg_stack.clear()
+    def push_arg(self):
+        val = self.stack.pop()   
+        self.arg_stack.append(val)
 
     def check_args(self):
-        pass
+        func_loc = self.stack.pop()
+
+    # Pass each argument
+        for idx, arg in enumerate(self.arg_stack):
+            instr = ThreeAddressCode(ThreeAddressCodeType.assign, arg, f"ARG{idx}")
+            self.pb.add_instruction_and_increase(instr)
+
+        # Call function
+        call_instr = ThreeAddressCode(ThreeAddressCodeType.call, func_loc)
+        self.pb.add_instruction_and_increase(call_instr)
+
+        # Push return value slot if not void
+        self.stack.push(self.return_val_slot)
+
+        # Reset arg stack for next call
+        self.arg_stack.clear()
 
     def mult(self):
         right = self.stack.pop()
