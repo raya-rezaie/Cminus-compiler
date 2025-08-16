@@ -14,6 +14,7 @@ class CodeGenerator:
         self.stack = semantic_stack
         self.symbol_table = symbol_table
         self.scope = 0
+        self.while_scope = 0
         self.breaks = {}
         self.func_names = []
         self.func_scopes = []
@@ -162,7 +163,7 @@ class CodeGenerator:
         print("SAVE JMP OUT SCOPE")
         jmp_idx = self.pb.add_instruction_and_increase(
             ThreeAddressCode(ThreeAddressCodeType.jp, "", "", ""))
-        self.breaks[self.scope].append(jmp_idx)
+        self.breaks[self.while_scope].append(jmp_idx)
 
     def save_if_cond_jpf(self):
         print("SAVE IF COND JPF")
@@ -205,6 +206,8 @@ class CodeGenerator:
         self.pb.set_index(index + 1)
 
         # save scope here: only valid break is in while
+        self.while_scope += 1
+        self.breaks[self.while_scope] = []
         self._enter_scope()
 
     # assumes stack = pc after while cond | result of cond | pc before while cond | ...
@@ -227,8 +230,10 @@ class CodeGenerator:
         # fill breaks to current pc (no valid breaks except in while => #fill_break moved here and combined with #fill_while)
         break_ins = ThreeAddressCode(
             ThreeAddressCodeType.jp, self.pb.get_index())
-        for b in self.breaks[self.scope]:
+        for b in self.breaks[self.while_scope]:
             self.pb.add_instruction_at(break_ins, b)
+        del self.breaks[self.while_scope]
+        self.while_scope -= 1
         self._exit_scope()
 
     def return_jp(self):
@@ -267,6 +272,9 @@ class CodeGenerator:
         # calculating the address of an element inside an array given the base address of the array and index.
         index = self.stack.pop()
         base = self.stack.pop()
+        base_sym = self.symbol_table.get_func_by_loc(base)
+        if (base_sym.type != SymbolType.INT_INDIRECT):
+            base = f"#{base}"
         # if str(index).startswith("#"):  # index is constant
         #     offset_bytes = int(str(index).lstrip("#")) * BLOCKSIZE
         #     t = self.new_temp()
@@ -281,7 +289,7 @@ class CodeGenerator:
         self.pb.add_instruction_and_increase(instr)
         t2 = self.new_temp()
         instr = ThreeAddressCode(
-            ThreeAddressCodeType.add, f"#{base}", t1, t2)
+            ThreeAddressCodeType.add, base, t1, t2)
         self.pb.add_instruction_and_increase(instr)
 
         self.stack.push(f"@{t2}")
@@ -386,12 +394,12 @@ class CodeGenerator:
     def _enter_scope(self):
         print("ENTER SCOPE")
         self.scope += 1
-        self.breaks[self.scope] = []
+        # self.breaks[self.while_scope] = []
         return self.scope
 
     def _exit_scope(self):
         print("EXIT SCOPE")
-        del self.breaks[self.scope]
+        # del self.breaks[self.scope]
         self.symbol_table.scope_symbols[self.scope].clear()
         self.scope -= 1
         return self.scope
