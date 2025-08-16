@@ -37,7 +37,6 @@ class CodeGenerator:
         if self.token[1] == 'output':
             self.stack.push(PRINT)
             return
-        print("in pid called get symbol\n")
         entry = self.symbol_table.get_symbol(self.token[1], self.scope)
         # print("self.token[1] is", self.token[1], "scope is", self.scope)
         if entry is None:
@@ -64,7 +63,6 @@ class CodeGenerator:
         if self.token[1] == 'output':
             self.stack.push(PRINT)
             return
-        print("pushed to stack" , self.token[1])
         self.stack.push(self.token[1])
 
     def declare_var(self):
@@ -131,13 +129,10 @@ class CodeGenerator:
         print("SAVE PARAM LIST")
         name = self.stack.pop()
         type = self.stack.pop()
-        print("called save param list param symbol is:", name, "\n")
         if type != SymbolType.INT.value:
             return  # only int arrays => maybe print error
         type = SymbolType.INT_INDIRECT
-        print("in save_param_list called get symbol")
         param_symbol = self.symbol_table.get_symbol(name, type, self.scope)
-
         param_symbol.type = type
         param_symbol.loc = self.db.alloc_memory()
         func_symbol = self.symbol_table.get_symbol(
@@ -152,7 +147,6 @@ class CodeGenerator:
             return  # maybe print error
         self.symbol_table.add_symbol(
             name, type, self.db.alloc_memory(), 1, self.scope)
-        print("in save param norm called get symbol")
         param_symbol = self.symbol_table.get_symbol(name, self.scope)
         func_symbol = self.symbol_table.get_symbol(
             self.func_names[-1], self.func_scopes[-1])
