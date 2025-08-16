@@ -281,14 +281,12 @@ class CodeGenerator:
         self.stack.push('#' + self.token[1])
 
     def start_args(self):
-        func_name = self.stack.top()
-        if func_name == PRINT:
+        func_idx = self.stack.top()
+        if func_idx == PRINT:
             self.called_function.append(PRINT)
             return
 
-        print("function name", func_name)
-        print("scope", self.scope)
-        func_sym = self.symbol_table.get_symbol(func_name, self.scope)
+        func_sym = self.symbol_table.get_func_by_loc(func_idx)
         print("in start args adding func sym", func_sym)
         print("SYM", func_sym)
         self.arg_stack[func_sym] = []
@@ -324,7 +322,7 @@ class CodeGenerator:
             self.pb.add_instruction_and_increase(instr)
 
         # jump to function start
-        func_start = self.func_start_addrs[func_sym.name]
+        func_start = func_sym.loc
         instr = ThreeAddressCode(
             ThreeAddressCodeType.jp, func_start, None, None)
         self.pb.add_instruction_and_increase(instr)

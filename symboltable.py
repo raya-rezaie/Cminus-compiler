@@ -92,6 +92,13 @@ class SymbolTable:
                 return (ss, scope)
         return self.get_symbol_with_scope(name, scope - 1)
 
+    def get_func_by_loc(self, loc):
+        for key in self.scope_symbols:
+            for ss in self.scope_symbols[key]:
+                if ss.loc == loc:
+                    return ss
+        return None
+
     def find_addr(self, name, scope):
         result = self.get_symbol(name, scope)
         if result:
