@@ -3,6 +3,7 @@ from symboltable import *
 from enum import Enum
 
 PRINT = 'PRINT'
+MAIN = 'main'
 
 
 class CodeGenerator:
@@ -22,11 +23,9 @@ class CodeGenerator:
         self.return_addr_slot = self.tb.alloc_memory()
         self.token = ""
         self.arg_stack = {}
-
         # reserve slot for jump to main
-        self.jp_main_idx = self.pb.get_index()
-        self.pb.add_instruction_and_increase(
-            ThreeAddressCode(ThreeAddressCodeType.jp, 0))
+        self.jp_main_idx = -1
+        # self.end_indx = self.pb.add_instruction_and_increase(ThreeAddressCode(ThreeAddressCodeType.jp, 0))
 
     def exec_func(self, type, token):
         self.token = token
@@ -71,7 +70,6 @@ class CodeGenerator:
         name = self.stack.pop()
         type = self.stack.pop()
         memory_index = self.db.alloc_memory()
-        self.db.set_value(memory_index, 0)
         self.symbol_table.add_symbol(
             name, SymbolType(type), memory_index, 1, self.scope)
 
@@ -85,13 +83,17 @@ class CodeGenerator:
         for i in range(size):
             loc = self.db.alloc_memory()
             if start_loc == None:
-                start_loc = self.db.alloc_memory()
-            self.db.set_value(loc, 0)
+                start_loc = loc
         self.symbol_table.add_symbol(name, type, start_loc, size, self.scope)
 
     def add_scope(self):
         print("ADD SCOPE")
+        if self.jp_main_idx == -1:
+            self.jp_main_idx = self.pb.get_index()
+            self.pb.set_index(self.pb.get_index()+1)
+        
         func_name = self.stack.pop()
+
         func_type = SymbolType(self.stack.pop())
         if func_type == SymbolType.INT:
             func_type = SymbolType.INT_FUNC
@@ -100,11 +102,13 @@ class CodeGenerator:
         else:
             return  # maybe error
 
+
         func_loc = self.pb.get_index()
         # print("added function to table", func_name, "in scope", self.scope)
         self.symbol_table.add_symbol(
             func_name, func_type, func_loc, 1, self.scope)  # TODO: check
         self.func_names.append(func_name)
+        print(self.jp_main_idx)
         if func_name == 'main':
             self.pb.add_instruction_at(ThreeAddressCode(
                 ThreeAddressCodeType.jp, func_loc), self.jp_main_idx)
@@ -119,6 +123,8 @@ class CodeGenerator:
         print("END FUNC")
         ins = ThreeAddressCode(ThreeAddressCodeType.jp,
                                f"@{self.return_addr_slot}")
+        if self.func_names[-1] != MAIN:
+            self.return_jp()
         func_scope = self.func_scopes.pop()
         func_name = self.func_names.pop()
         for return_idx in self.returns[func_scope]:
@@ -132,9 +138,8 @@ class CodeGenerator:
         if type != SymbolType.INT.value:
             return  # only int arrays => maybe print error
         type = SymbolType.INT_INDIRECT
-        param_symbol = self.symbol_table.get_symbol(name, type, self.scope)
-        param_symbol.type = type
-        param_symbol.loc = self.db.alloc_memory()
+        self.symbol_table.add_symbol(name, type, self.db.alloc_memory(), 1, self.scope)
+        param_symbol = self.symbol_table.get_symbol(name, self.scope)
         func_symbol = self.symbol_table.get_symbol(
             self.func_names[-1], self.func_scopes[-1])
         func_symbol.params.append(param_symbol)
@@ -233,7 +238,7 @@ class CodeGenerator:
                      ].append(self.pb.add_instruction_and_increase(filler_jp))
 
     def save_return_value(self):
-        print("SASVE RETURN VALUE")
+        print("SAVE RETURN VALUE")
         return_val = self.stack.pop()
         print("return value is", return_val)
         assign_ins = ThreeAddressCode(
@@ -262,24 +267,24 @@ class CodeGenerator:
         # calculating the address of an element inside an array given the base address of the array and index.
         index = self.stack.pop()
         base = self.stack.pop()
-        if str(index).startswith("#"):  # index is constant
-            offset_bytes = int(str(index).lstrip("#")) * BLOCKSIZE
-            t = self.new_temp()
-            instr = ThreeAddressCode(
-                ThreeAddressCodeType.add, base, offset_bytes, t)
-            self.pb.add_instruction_and_increase(instr)
-            self.stack.push(t)
-        else:
-            t1 = self.new_temp()
-            instr = ThreeAddressCode(
-                ThreeAddressCodeType.mult, index, f"#{BLOCKSIZE}", t1)
-            self.pb.add_instruction_and_increase(instr)
-            t2 = self.new_temp()
-            instr = ThreeAddressCode(
-                ThreeAddressCodeType.add, base, t1, t2)
-            self.pb.add_instruction_and_increase(instr)
+        # if str(index).startswith("#"):  # index is constant
+        #     offset_bytes = int(str(index).lstrip("#")) * BLOCKSIZE
+        #     t = self.new_temp()
+        #     instr = ThreeAddressCode(
+        #         ThreeAddressCodeType.add, base, offset_bytes, f"@{t}")
+        #     self.pb.add_instruction_and_increase(instr)
+        #     self.stack.push(t)
+        # else:
+        t1 = self.new_temp()
+        instr = ThreeAddressCode(
+            ThreeAddressCodeType.mult, index, f"#{BLOCKSIZE}", t1)
+        self.pb.add_instruction_and_increase(instr)
+        t2 = self.new_temp()
+        instr = ThreeAddressCode(
+            ThreeAddressCodeType.add, f"#{base}", t1, t2)
+        self.pb.add_instruction_and_increase(instr)
 
-            self.stack.push(t2)
+        self.stack.push(f"@{t2}")
 
     def relation(self):
         print("RELATION")

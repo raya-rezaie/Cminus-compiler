@@ -92,18 +92,6 @@ class dataBlock():
             return -1
         return (index - self.base) // BLOCKSIZE
 
-    def get_value(self, index):
-        array_idx = self._calc_array_idx(index)
-        if 0 <= array_idx < len(self.block):
-            return self.block[array_idx]
-        return None  # invalid index => maybe throw error
-
-    def set_value(self, index, value):
-        # shouldnt the index be self.index?
-        array_idx = self._calc_array_idx(index)
-        if 0 <= array_idx < len(self.block):
-            self.block[array_idx] = value
-
 
 class ThreeAddressCodeType(Enum):
     add = "ADD"
