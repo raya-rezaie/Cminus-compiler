@@ -6,7 +6,7 @@ class SemanticStack:
         self.sp = 0
 
     def push(self, addr):
-        print("PUSH", self.stack)
+        print("PUSH",addr, "to", self.stack)
         self.stack.append(addr)
         self.sp += 1
 

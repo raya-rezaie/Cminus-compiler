@@ -36,6 +36,7 @@ class CodeGenerator:
         if self.token[1] == 'output':
             self.stack.push(PRINT)
             return
+        print("in pid called get symbol\n")
         entry = self.symbol_table.get_symbol(self.token[1], self.scope)
         print("self.token[1] is", self.token[1], "scope is", self.scope)
         if entry is None:
@@ -60,6 +61,7 @@ class CodeGenerator:
         if self.token[1] == 'output':
             self.stack.push(PRINT)
             return
+        print("pushed to stack" , self.token[1])
         self.stack.push(self.token[1])
 
     def declare_var(self):
@@ -122,10 +124,13 @@ class CodeGenerator:
     def save_param_list(self):
         name = self.stack.pop()
         type = self.stack.pop()
+        print("called save param list param symbol is:", name, "\n")
         if type != SymbolType.INT.value:
             return  # only int arrays => maybe print error
         type = SymbolType.INT_INDIRECT
+        print("in save_param_list called get symbol")
         param_symbol = self.symbol_table.get_symbol(name, type, self.scope)
+
         param_symbol.type = type
         param_symbol.loc = self.db.alloc_memory()
         func_symbol = self.symbol_table.get_symbol(
@@ -139,10 +144,12 @@ class CodeGenerator:
             return  # maybe print error
         self.symbol_table.add_symbol(
             name, type, self.db.alloc_memory(), 1, self.scope)
+        print("in save param norm called get symbol")
         param_symbol = self.symbol_table.get_symbol(name, self.scope)
         func_symbol = self.symbol_table.get_symbol(
             self.func_names[-1], self.func_scopes[-1])
         print("HERE", self.func_names[-1], self.func_scopes[-1])
+        print("\n added symbol", name,"to",self.func_names[-1])
         func_symbol.params.append(param_symbol)
 
     def save_jmp_out_scope(self):  # unconditional jump to fill later
@@ -239,6 +246,7 @@ class CodeGenerator:
     def calc_arr_addr(self):
         # calculating the address of an element inside an array given the base address of the array and index.
         index = self.stack.pop()
+        print("in calc address called get symbol\n")
         base = self.symbol_table.get_symbol(self.stack.pop(), self.scope).loc
         if str(index).startswith("#"):  # index is constant
             offset_bytes = int(str(index).lstrip("#")) * BLOCKSIZE
@@ -289,7 +297,7 @@ class CodeGenerator:
         print("function name", func_name)
         print("scope", self.scope)
         func_sym = self.symbol_table.get_symbol(func_name, self.scope)
-        print("in start args adding func sym", func_sym)
+        print("in start args adding func sym", func_sym[0])
         print("SYM", func_sym)
         self.arg_stack[func_sym] = []
         self.called_function.append(func_sym)

@@ -77,7 +77,7 @@ class SymbolTable:
     def get_symbol(self, name, scope):  # if symbol is not in table, None is returned
         result = self.get_symbol_with_scope(name, scope)
         if result:
-            print("found symbol", name, "in scope",
+            print("in full symbol found symbol", name, "in scope",
                   scope, "full symbol", result[0].loc)
             return result[0]
         print("COULDNT FIND SYMBOL", name, "in scope", scope)

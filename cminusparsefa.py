@@ -204,7 +204,7 @@ def cminusParseFA(apply_fa, semantic_action):
               expression, ActionNames.SAVE_RETURN_VALUE, SEMICOLON]], return_stmt_prime, semantic_action)
 
     # 21. EXPRESSION
-    create_fa([[simple_expression_zegond], [ActionNames.PID, ID,
+    create_fa([[simple_expression_zegond], [ActionNames.PUSH_SS, ID,
               b, ActionNames.PRINT_FUNC]], expression, semantic_action)
 
     # 22. B

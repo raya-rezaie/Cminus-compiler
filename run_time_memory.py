@@ -42,14 +42,14 @@ class programBlock():
         self.block = {}
 
     def add_instruction_and_increase(self, instruction):
-        print("adding instruction", instruction, "and increase", self.index)
+        print("adding instruction", instruction.rator, "and increase", self.index)
         idx = self.index
         self.block[idx] = instruction
         self.index += 1
         return idx
 
     def add_instruction_at(self, instruction, index):
-        print("adding instruction", instruction, "at", index)
+        print("adding instruction", instruction.rator, "at", index)
         if self.base <= index <= self.bound:
             self.block[index] = instruction
         else:
