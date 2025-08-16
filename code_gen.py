@@ -87,9 +87,7 @@ class CodeGenerator:
             if start_loc == None:
                 start_loc = self.db.alloc_memory()
             self.db.set_value(loc, 0)
-        self.symbol_table.set_symbol_type(name, type, self.scope)
-        self.symbol_table.set_symbol_len(name, size, self.scope)
-        self.symbol_table.set_symbol_loc(name, start_loc, self.scope)
+        self.symbol_table.add_symbol(name, type, start_loc, size, self.scope)
 
     def add_scope(self):
         print("ADD SCOPE")
@@ -263,7 +261,7 @@ class CodeGenerator:
         print("CALC ARR ADDR")
         # calculating the address of an element inside an array given the base address of the array and index.
         index = self.stack.pop()
-        base = self.symbol_table.get_symbol(self.stack.pop(), self.scope).loc
+        base = self.stack.pop()
         if str(index).startswith("#"):  # index is constant
             offset_bytes = int(str(index).lstrip("#")) * BLOCKSIZE
             t = self.new_temp()

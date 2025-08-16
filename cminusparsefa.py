@@ -273,7 +273,7 @@ def cminusParseFA(apply_fa, semantic_action):
               signed_factor_zegond, semantic_action)
 
     # 40. FACTOR
-    create_fa([[OPENPAR, expression, CLOSEPAR], [ActionNames.PUSH_SS, ID, var_call_prime], [
+    create_fa([[OPENPAR, expression, CLOSEPAR], [ActionNames.PID, ID, var_call_prime], [
               ActionNames.PUSH_NUM_SS, NUM]], factor, semantic_action)
 
     # 41. VAR CALL PRIME
