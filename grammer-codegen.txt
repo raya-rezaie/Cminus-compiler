@@ -67,7 +67,7 @@ SignedFactorZegond -> + Factor
 SignedFactorZegond -> - Factor
 SignedFactorZegond -> FactorZegond
 Factor -> ( Expression )
-Factor -> #push_ss ID VarCallPrime
+Factor -> #pid ID VarCallPrime
 Factor -> #push_num_ss NUM
 VarCallPrime -> #start_args ( Args ) #check_args
 VarCallPrime -> VarPrime

@@ -77,10 +77,10 @@ class SymbolTable:
     def get_symbol(self, name, scope):  # if symbol is not in table, None is returned
         result = self.get_symbol_with_scope(name, scope)
         if result:
-            print("in full symbol found symbol", name, "in scope",
-                  scope, "full symbol", result[0].loc)
+            # print("found symbol", name, "in scope",
+            #       scope, "full symbol", result[0].loc)
             return result[0]
-        print("COULDNT FIND SYMBOL", name, "in scope", scope)
+        # print("COULDNT FIND SYMBOL", name, "in scope", scope)
         return None
 
     def get_symbol_with_scope(self, name, scope):
@@ -91,6 +91,13 @@ class SymbolTable:
             if ss.name == name:
                 return (ss, scope)
         return self.get_symbol_with_scope(name, scope - 1)
+
+    def get_func_by_loc(self, loc):
+        for key in self.scope_symbols:
+            for ss in self.scope_symbols[key]:
+                if ss.loc == loc:
+                    return ss
+        return None
 
     def find_addr(self, name, scope):
         result = self.get_symbol(name, scope)
