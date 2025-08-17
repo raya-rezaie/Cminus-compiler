@@ -6,7 +6,7 @@ class SymbolType(Enum):
     TBD = ""
     INT = "int"
     VOID = "void"
-    INT_INDIRECT = "int []"
+    INT_INDIRECT = "array"
     INT_FUNC = "int func"
     VOID_FUNC = "void func"
 
@@ -105,6 +105,19 @@ class SymbolTable:
         if result:
             return result.loc
         return None
+    def find_by_loc(self, loc, scope=None):
+            if scope is not None:
+            
+                for sym in self.scope_symbols[scope]:
+                    if sym.loc == loc:
+                        return sym
+            else:
+                
+                for symbols in self.scope_symbols.values():
+                    for sym in symbols:
+                        if sym.loc == loc:
+                            return sym
+            return None 
 
     def format_to_text(self):
         text = ""

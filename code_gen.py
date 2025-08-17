@@ -85,7 +85,7 @@ class CodeGenerator:
         type = self.stack.pop()
         if type != 'int':
             self.errors_info.counter = self.current_line - 1
-            self.errors_info.add_info(f"Illegal type of {type} for {name}.")
+            self.errors_info.add_info(f"Illegal type of {type} for '{name}'.")
             return
         memory_index = self.db.alloc_memory()
         self.symbol_table.add_symbol(
@@ -96,7 +96,8 @@ class CodeGenerator:
         # is the type and size ok? (fekr konam are)
         size = int(self.stack.pop())
         name = self.stack.pop()
-        type = SymbolType(self.stack.pop())
+        type = SymbolType.INT_INDIRECT
+        print("adding symbol " , name , "with type" , type)
         start_loc = None
         for i in range(size):
             loc = self.db.alloc_memory()
@@ -284,6 +285,17 @@ class CodeGenerator:
 
     def assign(self):
         print("ASSIGN")
+        symbol1 = self.symbol_table.find_by_loc(self.stack.top())
+        symbol2 = self.symbol_table.find_by_loc(self.stack.top(1))
+        if symbol1 and symbol2:
+            if symbol1.type != symbol2.type:
+                self.errors_info.counter = self.current_line
+                self.errors_info.add_info(f"Type mismatch in operands, Got {symbol2.type.value} instead of {symbol1.type.value}")
+                #print("error type")
+                return
+        #symbol = self.symbol_table.find_by_loc(self.stack.top() , self.scope)
+        #if symbol:
+        #    print("the symbol is" ,symbol.name , "with type", symbol.type)
         instr = ThreeAddressCode(ThreeAddressCodeType.assign,
                                  self.stack.pop(), self.stack.top())
         self.pb.add_instruction_and_increase(instr)
@@ -377,15 +389,12 @@ class CodeGenerator:
 
         # get parameter names from symbol table
         params = func_sym.params
-        print("here")
         if len(self.arg_stack[func_sym]) != len(params):
             self.errors_info.counter = self.current_line
             self.errors_info.add_info(f"Mismatch in numbers of arguments of '{func_sym.name}'.")
             return
         # copy arguments into parameter slots
         for arg_val, param in zip(self.arg_stack[func_sym], params):
-            symbol = self.symbol_table.get_symbol(arg_val , self.scope)
-            print("the type of arg_val is ", symbol.type)
             param_loc = param.loc
             instr = ThreeAddressCode(
                 ThreeAddressCodeType.assign, arg_val, param_loc)
