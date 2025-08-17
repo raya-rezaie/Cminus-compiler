@@ -18,6 +18,7 @@ class Symbol:
         self.loc = loc
         self.length = length
         self.params = []
+        self.return_temp_addr = None
 
 
 class SymbolTable:
