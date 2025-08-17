@@ -182,8 +182,8 @@ def main():
 
     # CODE GENERATION INITIALIZATION
     PB_BASE = 0
-    PB_BOUND = 99
-    DB_BASE = 100
+    PB_BOUND = 199
+    DB_BASE = 200
     DB_BOUND = 499
     TP_BASE = 500
     TP_BOUND = 1000

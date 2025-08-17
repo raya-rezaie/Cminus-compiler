@@ -118,16 +118,20 @@ class CodeGenerator:
         self.scope += 1
 
     def update_func_params(self):
-        pass
+        func_sym = self.symbol_table.get_symbol(self.func_names[-1], self.func_scopes[-1])
+        ret_addr_sym = Symbol("!ret", SymbolType.INT, self.tb.alloc_memory())
+        func_sym.return_temp_addr = ret_addr_sym.loc
 
     def end_func(self):
+        func_scope = self.func_scopes[-1]
+        func_name = self.func_names[-1]
         print("END FUNC")
         ins = ThreeAddressCode(ThreeAddressCodeType.jp,
-                               f"@{self.return_addr_slot}")
-        if self.func_names[-1] != MAIN:
+                               f"@{self.symbol_table.get_symbol(func_name, func_scope).return_temp_addr}")
+        if func_name != MAIN:
             self.return_jp()
-        func_scope = self.func_scopes.pop()
-        func_name = self.func_names.pop()
+        self.func_scopes.pop()
+        self.func_names.pop()
         for return_idx in self.returns[func_scope]:
             self.pb.add_instruction_at(ins, return_idx)
         del self.returns[func_scope]
@@ -340,12 +344,13 @@ class CodeGenerator:
 
     def check_args(self):
         print("CHECK ARGS")
-        self.stack.push(self.return_val_slot)
+        this_call_ret_val = self.tb.alloc_memory()
+        self.stack.push(this_call_ret_val)
         func_sym = self.called_function.pop()
         # print("in check args", func_sym)
         if (func_sym == PRINT):
             item = self.arg_stack[func_sym].pop()
-            print("popped item", item, "in print")
+            # print("popped item", item, "in print")
             # self.stack.pop()  # pop 'PRINT'
             instr = ThreeAddressCode(ThreeAddressCodeType.print, item)
             self.pb.add_instruction_and_increase(instr)
@@ -365,16 +370,17 @@ class CodeGenerator:
                 instr = ThreeAddressCode(
                     ThreeAddressCodeType.assign, f"#{arg_val}", param_loc)
             self.pb.add_instruction_and_increase(instr)
-
         # jump to function start
         ret_idx = self.pb.get_index() + 2
-        instr = ThreeAddressCode(ThreeAddressCodeType.assign, f"#{ret_idx}", self.return_addr_slot)
+        instr = ThreeAddressCode(ThreeAddressCodeType.assign, f"#{ret_idx}", func_sym.return_temp_addr)
         self.pb.add_instruction_and_increase(instr)
 
         func_start = func_sym.loc
         instr = ThreeAddressCode(
             ThreeAddressCodeType.jp, func_start)
         self.pb.add_instruction_and_increase(instr)
+        if func_sym.type == SymbolType.INT_FUNC:
+            self.pb.add_instruction_and_increase(ThreeAddressCode(ThreeAddressCodeType.assign, self.return_val_slot, this_call_ret_val))
 
         # push return value location if needed
         # if self.symbol_table.get_symbol_type(func_name) != SymbolType.VOID_FUNC:
