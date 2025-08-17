@@ -69,7 +69,6 @@ def get_next_token():
             scanner_error_info.add_info(
                 "(" + next_token + ", " + state_type[1].value + ")")
         line_no += newlines
-        code_gen.current_line = line_no
         token_info.add_counter(newlines)
         scanner_error_info.add_counter(newlines)
         parser_error_info.add_counter(newlines)
@@ -158,7 +157,6 @@ def apply_fa(fa, token):
     return subtrees
 
 
-
 def main():
     # SCANNER INITIALIZATION
     global cminusautomata
@@ -180,8 +178,6 @@ def main():
     scanner_has_error = False
     parser_error_info = LineInfo()
     parser_has_error = False
-    #codeGenerator_has_error = False
-    #semantic_error_info = LineInfo()
     line_no = 1
 
     # CODE GENERATION INITIALIZATION
@@ -194,7 +190,7 @@ def main():
     stack = SemanticStack()
     runtime_mem = RunTimeMemory(programBlock(PB_BASE, PB_BOUND), dataBlock(
         DB_BASE, DB_BOUND), dataBlock(TP_BASE, TP_BOUND))
-    code_gen = CodeGenerator(runtime_mem, stack, symbol_table , line_no)
+    code_gen = CodeGenerator(runtime_mem, stack, symbol_table)
 
     tree = parser()
 
@@ -228,18 +224,9 @@ def main():
 
     # CODE GEN FILES
     code_gen_file = open('output.txt', 'w', encoding='utf-8')
-    semantic_error_file = open('semantic_errors.txt' , 'w', encoding='utf-8')
-    if not code_gen.has_error:
-        code_gen_file.write(code_gen.pb.to_string())
-    else:
-        code_gen_file.write("The code has not been generated.")
-        semantic_error_file.write(code_gen.errors_info.format_to_text3())
-    semantic_error_file.close()
-    
-    #if not codeGenerator_has_error:
-        
-    
-    #semantic_error_file.write
+    code_gen_file.write(code_gen.pb.to_string())
+    semantic_error_file = open('semantic.txt' , 'w', encoding='utf-8')
+    semantic_error_file.write
 
 if __name__ == "__main__":
     main()

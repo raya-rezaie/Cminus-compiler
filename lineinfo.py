@@ -27,9 +27,3 @@ class LineInfo:
                 text += info + " "
             text += "\n"
         return text
-    def format_to_text3(self):
-        text = ""
-        for counter, infos in sorted(self.infos.items()):
-            for info in infos:
-                text += "#" + str(counter) + " : Semantic Error! " + info + "\n"
-        return text
