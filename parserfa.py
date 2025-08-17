@@ -97,12 +97,12 @@ class ParserFA:
                 ep_next_state = to_s
             elif callable(tnt):
                 if to_s.is_terminal():
-                    print("giving terminal ",token, " to codeGen\n")
+                    #print("giving terminal ",token, " to codeGen\n")
                     self.semantic_actions.exec_func(tnt, token)
                 else:
                     _, next_transition_tnt = self.transitions[to_s][0]
                     if next_transition_tnt.matches(token):
-                        print("giving token ",token, " to codeGen\n")
+                        #print("giving token ",token, " to codeGen\n")
                         self.semantic_actions.exec_func(tnt, token)
                     else:
                         continue

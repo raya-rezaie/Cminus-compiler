@@ -1,13 +1,16 @@
 from run_time_memory import *
 from symboltable import *
 from enum import Enum
-
+from lineinfo import *
 PRINT = 'PRINT'
 MAIN = 'main'
 
+#class SemanticErrors:
+    
 
+    
 class CodeGenerator:
-    def __init__(self, runtime_memory, semantic_stack, symbol_table):
+    def __init__(self, runtime_memory, semantic_stack, symbol_table , line_no):
         self.pb = runtime_memory.get_pb()
         self.tb = runtime_memory.get_temp()
         self.db = runtime_memory.get_db()
@@ -26,22 +29,32 @@ class CodeGenerator:
         self.arg_stack = {}
         # reserve slot for jump to main
         self.jp_main_idx = -1
+        self.has_error = False
+        self.errors_info = LineInfo()
+        self.current_line = line_no
         # self.end_indx = self.pb.add_instruction_and_increase(ThreeAddressCode(ThreeAddressCodeType.jp, 0))
-
+        
     def exec_func(self, type, token):
         self.token = token
         type(self)
 
     def pid(self):
-        print("PID")
+        #print("PID")
         if self.token[1] == 'output':
             self.stack.push(PRINT)
             return
         entry = self.symbol_table.get_symbol(self.token[1], self.scope)
         # print("self.token[1] is", self.token[1], "scope is", self.scope)
         if entry is None:
-            # TODO: catch errors to handle semantic errors
-            raise NameError(f"Undefined identifier {self.token[1]}")
+            #print(str(self.token) ,"is not defined\n")
+            self.errors_info.counter = self.current_line
+            self.errors_info.add_info(f"'{self.token[1]}' is not defined.")
+            #self.errors_info.add_counter(self.current_line)
+            self.has_error = True
+            self.stack.push(None)
+            return
+            
+            #raise NameError(f"Undefined identifier {self.token[1]}")
         # print("PID", entry.loc)
 
         self.stack.push(entry.loc)
@@ -66,10 +79,14 @@ class CodeGenerator:
         self.stack.push(self.token[1])
 
     def declare_var(self):
-        print("DECLARE VAR")
+        #print("DECLARE VAR")
         # the data is supposed to be saved in db as names of the token or complete token
         name = self.stack.pop()
         type = self.stack.pop()
+        if type != 'int':
+            self.errors_info.counter = self.current_line - 1
+            self.errors_info.add_info(f"Illegal type of {type} for {name}.")
+            return
         memory_index = self.db.alloc_memory()
         self.symbol_table.add_symbol(
             name, SymbolType(type), memory_index, 1, self.scope)
@@ -360,9 +377,15 @@ class CodeGenerator:
 
         # get parameter names from symbol table
         params = func_sym.params
-
+        print("here")
+        if len(self.arg_stack[func_sym]) != len(params):
+            self.errors_info.counter = self.current_line
+            self.errors_info.add_info(f"Mismatch in numbers of arguments of '{func_sym.name}'.")
+            return
         # copy arguments into parameter slots
         for arg_val, param in zip(self.arg_stack[func_sym], params):
+            symbol = self.symbol_table.get_symbol(arg_val , self.scope)
+            print("the type of arg_val is ", symbol.type)
             param_loc = param.loc
             instr = ThreeAddressCode(
                 ThreeAddressCodeType.assign, arg_val, param_loc)
@@ -447,6 +470,7 @@ class CodeGenerator:
     #         self.format_token(r)
     #     )
     #     return instr
+
 
 
 class ActionNames(Enum):
