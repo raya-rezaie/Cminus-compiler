@@ -47,6 +47,7 @@ class CodeGenerator:
         # print("self.token[1] is", self.token[1], "scope is", self.scope)
         if entry is None:
             #print(str(self.token) ,"is not defined\n")
+            self.has_error = True
             self.errors_info.counter = self.current_line
             self.errors_info.add_info(f"'{self.token[1]}' is not defined.")
             #self.errors_info.add_counter(self.current_line)
@@ -84,6 +85,7 @@ class CodeGenerator:
         name = self.stack.pop()
         type = self.stack.pop()
         if type != 'int':
+            self.has_error = True
             self.errors_info.counter = self.current_line - 1
             self.errors_info.add_info(f"Illegal type of {type} for '{name}'.")
             return
@@ -185,7 +187,13 @@ class CodeGenerator:
         print("SAVE JMP OUT SCOPE")
         jmp_idx = self.pb.add_instruction_and_increase(
             ThreeAddressCode(ThreeAddressCodeType.jp, "", "", ""))
-        self.breaks[self.while_scope].append(jmp_idx)
+        if self.while_scope:
+            self.breaks[self.while_scope].append(jmp_idx)
+        else:
+            self.has_error = True
+            self.errors_info.counter = self.current_line - 1
+            self.errors_info.add_info("No 'while' found for 'break'.")
+            return
 
     def save_if_cond_jpf(self):
         print("SAVE IF COND JPF")
@@ -288,7 +296,10 @@ class CodeGenerator:
         symbol1 = self.symbol_table.find_by_loc(self.stack.top())
         symbol2 = self.symbol_table.find_by_loc(self.stack.top(1))
         if symbol1 and symbol2:
+            print("the var " , symbol1.name , " has type " , symbol1.type)
+            print("the var " , symbol2.name , " has type " , symbol2.type)
             if symbol1.type != symbol2.type:
+                self.has_error = True
                 self.errors_info.counter = self.current_line
                 self.errors_info.add_info(f"Type mismatch in operands, Got {symbol2.type.value} instead of {symbol1.type.value}")
                 #print("error type")
@@ -390,6 +401,7 @@ class CodeGenerator:
         # get parameter names from symbol table
         params = func_sym.params
         if len(self.arg_stack[func_sym]) != len(params):
+            self.has_error = True
             self.errors_info.counter = self.current_line
             self.errors_info.add_info(f"Mismatch in numbers of arguments of '{func_sym.name}'.")
             return
