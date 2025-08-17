@@ -225,7 +225,8 @@ def main():
     # CODE GEN FILES
     code_gen_file = open('output.txt', 'w', encoding='utf-8')
     code_gen_file.write(code_gen.pb.to_string())
-
+    semantic_error_file = open('semantic.txt' , 'w', encoding='utf-8')
+    semantic_error_file.write
 
 if __name__ == "__main__":
     main()
